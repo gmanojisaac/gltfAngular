@@ -1,6 +1,7 @@
 import { ElementRef, Injectable, NgZone, OnDestroy } from '@angular/core';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 @Injectable({ providedIn: 'root' })
 export class EngineService implements OnDestroy {
@@ -15,6 +16,8 @@ export class EngineService implements OnDestroy {
   private frameId: number = null;
 
   private model!: THREE.Group; // Store the model
+  private controls!: OrbitControls;
+
   public constructor(private ngZone: NgZone) {
   }
 
@@ -58,6 +61,12 @@ export class EngineService implements OnDestroy {
     const material = new THREE.MeshBasicMaterial({color: 0x00ff00});
     this.cube = new THREE.Mesh(geometry, material);
     //this.scene.add(this.cube);
+
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controls.minDistance = 2;
+    this.controls.maxDistance = 10;
+    this.controls.target.set(0, 0.5, -0.2);
+    this.controls.update();
 
   }
 
@@ -117,7 +126,7 @@ export class EngineService implements OnDestroy {
 
         // Update the model's world matrix
         this.model.updateMatrixWorld(true);
-        
+
       },
       (xhr) => {
         console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
