@@ -18,7 +18,9 @@ export class EngineComponent implements OnInit {
 
   public ngOnInit(): void {
     this.engServ.createScene(this.rendererCanvas);
+    this.engServ.loadModel();
     this.engServ.animate();
+    
   }
 
 }

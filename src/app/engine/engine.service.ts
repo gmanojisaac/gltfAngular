@@ -1,5 +1,6 @@
 import { ElementRef, Injectable, NgZone, OnDestroy } from '@angular/core';
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
 @Injectable({ providedIn: 'root' })
 export class EngineService implements OnDestroy {
@@ -13,6 +14,7 @@ export class EngineService implements OnDestroy {
 
   private frameId: number = null;
 
+  private model!: THREE.Group; // Store the model
   public constructor(private ngZone: NgZone) {
   }
 
@@ -55,7 +57,7 @@ export class EngineService implements OnDestroy {
     const geometry = new THREE.BoxGeometry(1, 1, 1);
     const material = new THREE.MeshBasicMaterial({color: 0x00ff00});
     this.cube = new THREE.Mesh(geometry, material);
-    this.scene.add(this.cube);
+    //this.scene.add(this.cube);
 
   }
 
@@ -81,6 +83,10 @@ export class EngineService implements OnDestroy {
     this.frameId = requestAnimationFrame(() => {
       this.render();
     });
+        // Rotate the model if it is loaded
+        if (this.model) {
+          //this.model.rotation.y += 0.01; // Adjust the rotation speed as needed
+        }
 
     this.cube.rotation.x += 0.01;
     this.cube.rotation.y += 0.01;
@@ -96,4 +102,30 @@ export class EngineService implements OnDestroy {
 
     this.renderer.setSize(width, height);
   }
+
+  public loadModel(): void {
+    const loader = new GLTFLoader();
+    loader.load(
+      'assets/frame.glb', // Adjust the path to your .glb file
+      (gltf) => {
+        this.model = gltf.scene; // Store the model
+        this.scene.add(gltf.scene);
+
+        this.model.position.set(1, 1, 1);
+        this.model.rotation.set(Math.PI / 4, Math.PI / 4, 0);
+        this.model.scale.set(2, 2, 2);
+
+        // Update the model's world matrix
+        this.model.updateMatrixWorld(true);
+        
+      },
+      (xhr) => {
+        console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
+      },
+      (error) => {
+        console.error('An error happened', error);
+      }
+    );
+  }
+
 }
