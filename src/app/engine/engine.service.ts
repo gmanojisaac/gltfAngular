@@ -50,7 +50,7 @@ export class EngineService implements OnDestroy {
     this.scene = new THREE.Scene();
 
     this.camera = new THREE.PerspectiveCamera(
-      75, window.innerWidth / window.innerHeight, 0.1, 1000
+      75, window.innerWidth / window.innerHeight, 0.01, 100
     );
     this.camera.position.z = 5;
     this.scene.add(this.camera);
@@ -66,9 +66,9 @@ export class EngineService implements OnDestroy {
     //this.scene.add(this.cube);
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-    this.controls.minDistance = 2;
+    this.controls.minDistance = 5;
     this.controls.maxDistance = 10;
-    this.controls.target.set(0, 0.5, -0.2);
+    this.controls.target.set(15, 0, 0);
     this.controls.update();
 
   }
@@ -97,7 +97,7 @@ export class EngineService implements OnDestroy {
     });
         // Rotate the model if it is loaded
         if (this.model) {
-          //this.model.rotation.y += 0.01; // Adjust the rotation speed as needed
+          this.model.rotation.y += 0.01; // Adjust the rotation speed as needed
         }
 
     this.cube.rotation.x += 0.01;
@@ -134,8 +134,8 @@ export class EngineService implements OnDestroy {
         this.scene.add(gltf.scene);
 
         this.model.position.set(1, 1, 1);
-        this.model.rotation.set(Math.PI / 4, Math.PI / 4, 0);
-        this.model.scale.set(2, 2, 2);
+        //this.model.rotation.set(Math.PI / 4, Math.PI / 4, 0);
+        this.model.scale.set(4, 4, 4);
 
         // Update the model's world matrix
         this.model.updateMatrixWorld(true);
