@@ -2,6 +2,7 @@ import { ElementRef, Injectable, NgZone, OnDestroy } from '@angular/core';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
 
 @Injectable({ providedIn: 'root' })
 export class EngineService implements OnDestroy {
@@ -42,6 +43,8 @@ export class EngineService implements OnDestroy {
       antialias: true // smooth edges
     });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
+
+
 
     // create the scene
     this.scene = new THREE.Scene();
@@ -113,6 +116,16 @@ export class EngineService implements OnDestroy {
   }
 
   public loadModel(): void {
+
+    new RGBELoader()
+    .setPath('assets/')
+    .load('quarry_01_1k.hdr', texture => {
+      console.log
+      texture.mapping = THREE.EquirectangularReflectionMapping;
+      this.scene.background = texture;
+      this.scene.environment = texture;
+    });
+
     const loader = new GLTFLoader();
     loader.load(
       'assets/frame.glb', // Adjust the path to your .glb file
