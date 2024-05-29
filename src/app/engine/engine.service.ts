@@ -13,7 +13,7 @@ export class EngineService implements OnDestroy {
   private light: THREE.AmbientLight;
 
   private cube: THREE.Mesh;
-
+ 
   private frameId: number = null;
 
   private model!: THREE.Group; // Store the model
@@ -135,7 +135,7 @@ export class EngineService implements OnDestroy {
 
         this.model.position.set(1, 1, 1);
         //this.model.rotation.set(Math.PI / 4, Math.PI / 4, 0);
-        this.model.scale.set(4, 4, 4);
+        this.model.scale.set(10, 10, 10);
 
         // Update the model's world matrix
         this.model.updateMatrixWorld(true);
