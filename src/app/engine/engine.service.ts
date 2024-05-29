@@ -133,7 +133,7 @@ export class EngineService implements OnDestroy {
         this.model = gltf.scene; // Store the model
         this.scene.add(gltf.scene);
 
-        this.model.position.set(1, 1, 1);
+        this.model.position.set(10, 10, 10);
         //this.model.rotation.set(Math.PI / 4, Math.PI / 4, 0);
         this.model.scale.set(10, 10, 10);
 
