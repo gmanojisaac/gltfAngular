@@ -30,6 +30,15 @@ export class EngineService implements OnDestroy {
   public constructor(private ngZone: NgZone) {
   }
 
+  
+    /*
+    +-------------------+                                                                                                     
+    |                   |                                                                                                     
+    |   ngOnDestroy- TBD|
+    |                   |                                                                                                     
+    +---------^---------+     
+    */
+
   public ngOnDestroy(): void {
     if (this.frameId != null) {
       cancelAnimationFrame(this.frameId);
