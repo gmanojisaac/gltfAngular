@@ -24,3 +24,40 @@ export class EngineComponent implements OnInit {
   }
 
 }
+
+
+
+/*
++-------------------+                                                                                                     
+|                   |                                                                                                     
+|  EngineComponent  |                                                                                                     
+|                   |                                                                                                     
++---------^---------+                                                                                                     
+          |                                                                                                               
+          |                                                                                               
+          |                                                                                                               
++---------+---------------------------------+                                                                        
+|                                           |                                                                        
+|  ngOnInit                                 |
+|   -Pass HTML canvas element from template.|
+|   -To engine service → create scene       |
+|   -Calls engine service → load model      |
+|   -Calls engine service → animate         |
+|                                           |
+|                                           |                                                                       
++---------+---------------------------------+                                                                         
+          |                                                                                                               
+          |                                                                                               
+          |                   
++-------------------------------------------+                                                                                                     
+|                                           |                                                                                                     
+|  Template HTML                            |
+|   -  canvas element displayed with id     |
+|                                           |                                                                                                     
+|                                           |                                                                                                     
++-------------------------------------------+
+
+
+
+
+*/
