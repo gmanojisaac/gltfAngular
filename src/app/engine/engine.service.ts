@@ -32,11 +32,13 @@ export class EngineService implements OnDestroy {
 
   
     /*
-    +-------------------+                                                                                                     
-    |                   |                                                                                                     
-    |   ngOnDestroy- TBD|
-    |                   |                                                                                                     
-    +---------^---------+     
+    +-----------------------------------------------------------------------------+                                                                                                     
+    |                                                                             |                                                                                                     
+    |   ngOnDestroy- TBD                                                          |
+    |     -checks if frameId is not null,if null it cancels  animationframe
+    |     -checks if the renderer is not null,if null it cleans up the renderer 
+    |      -sets the canvas to null                 |                                                                                                     
+    +---------^---------------------------------------+     
     */
 
   public ngOnDestroy(): void {
@@ -99,10 +101,10 @@ export class EngineService implements OnDestroy {
     this.scene.add(this.camera);
 
     // soft white light
-    this.light = new THREE.AmbientLight(0x404040);
+    //this.light = new THREE.AmbientLight(0x404040);
     
-    this.light.position.z = 10;
-    this.scene.add(this.light);
+    //this.light.position.z = 10;
+   // this.scene.add(this.light);
 
   // directional light
    const directionalLight = new THREE.DirectionalLight(0xFFFFFF , 1);
@@ -118,6 +120,18 @@ export class EngineService implements OnDestroy {
     directionalLight.shadow.camera.right += 25
 
     this.scene.add( new THREE.CameraHelper(directionalLight.shadow.camera) );
+
+    function animate() {
+      const time = Date.now() * 0.0005;
+     directionalLight.position.x = Math.sin(time) * 20;
+     directionalLight.position.z = Math.cos(time) * 20;
+      this.renderer.render(this.scene, this.camera);
+      requestAnimationFrame(animate);
+    }
+
+
+
+
     // Cube mesh
     /*
     +---------------------------------------------------------------------+                                                                                                     
