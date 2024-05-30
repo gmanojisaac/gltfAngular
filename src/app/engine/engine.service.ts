@@ -73,23 +73,17 @@ export class EngineService implements OnDestroy {
     });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
      this.renderer.shadowMap.enabled = true; 
+
     // create the scene
     /*
     +-----------------------------------------------------------------+                                                                                                     
     |                                                                 |                                                                                                     
     | Add to Scene                                                    |
-    |     - uses threejs.scene → creates a basic scene                |                       |
+    |     - uses threejs.scene → creates a basic scene                |                       
     |     - use PerspectiveCamera → pass window object and Z position |
     |     - use AmbientLight → pass light color and Z position        |
     |      → add to scene  
-    |  directional light  
-    |    -use threejs.directionallight -> create castshadow                                  |                                                                                                     
-    |    -use directionallight -> pass color and intensity
-    |    -set positions and enable castshadow true
-    |    -add to scene
-    |   optional (add a helper camera ) for shadow
-    |    -optional (set the size of camera)
-    |    - add to scene                                                        |                                                                                                     
+    |                                                                 |                                                                                                   
     +---------^-------------------------------------------------------+     
     */
     this.scene = new THREE.Scene();
@@ -101,10 +95,24 @@ export class EngineService implements OnDestroy {
     this.scene.add(this.camera);
 
     // soft white light
-    //this.light = new THREE.AmbientLight(0x404040);
-    
-    //this.light.position.z = 10;
-   // this.scene.add(this.light);
+    this.light = new THREE.AmbientLight(0x404040);
+    this.light.position.z = 10;
+   this.scene.add(this.light);
+
+/*
+   +-----------------------------------------------------------------+                                                                                                     
+   |                                                                 |                                                                                                     
+   | 
+   |  directional light  
+   |    -use threejs.directionallight -> create castshadow           |                                                                                                     
+   |    -use directionallight -> pass color and intensity
+   |    -set positions and enable castshadow true
+   |    -add to scene
+   |   optional (add a helper camera ) for shadow
+   |    -optional (set the size of camera)
+   |    - add to scene                                                |                                                                                                   
+   +---------^-------------------------------------------------------+     
+   */
 
   // directional light
    const directionalLight = new THREE.DirectionalLight(0xFFFFFF , 1);
@@ -129,6 +137,31 @@ export class EngineService implements OnDestroy {
       requestAnimationFrame(animate);
     }
 
+      // SpotLight
+
+      /*
+   +-----------------------------------------------------------------+                                                                                                     
+   |                                                                 |                                                                                                     
+
+   |    -use threejs.SpotLight -> create spotlight 
+        -add to scene          |                                                                                                     
+
+   |    -set positions and enable castshadow true
+        - set angle
+   |    -add to scene
+   |   optional - use threejs.SpotLighthelper -> create spotlighthelper) for spotlight
+   | 
+   |    - add to scene                                                                                                                                                 
+   +---------^-------------------------------------------------------+     
+   */
+
+      const spotlight = new THREE.SpotLight(0xFFFFFF);
+      this.scene.add(spotlight);
+      spotlight.position.set(-100, 100, 0);
+      spotlight.castShadow = true;
+      spotlight.angle = 0.2;
+      const sLightHelper = new THREE.SpotLightHelper(spotlight);
+      this.scene.add(sLightHelper);
 
 
 
@@ -281,8 +314,8 @@ export class EngineService implements OnDestroy {
     .load('quarry_01_1k.hdr', texture => {
       console.log
       texture.mapping = THREE.EquirectangularReflectionMapping;
-      this.scene.background = texture;
-      this.scene.environment = texture;
+     //this.scene.background = texture;
+      //this.scene.environment = texture;
     });
 
     const loader = new GLTFLoader();
@@ -291,14 +324,14 @@ export class EngineService implements OnDestroy {
       (gltf) => {
         this.model = gltf.scene; // Store the model
         
-        this.scene.add(gltf.scene);
+       //this.scene.add(gltf.scene);
 
         this.model.position.set(1, 1, 1);
         //this.model.rotation.set(Math.PI / 4, Math.PI / 4, 0);
         this.model.scale.set(4, 4, 4);
 
         // Update the model's world matrix
-        this.model.updateMatrixWorld(true);
+       this.model.updateMatrixWorld(true);
 
         
       },
