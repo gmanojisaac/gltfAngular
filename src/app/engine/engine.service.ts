@@ -226,6 +226,29 @@ export class EngineService implements OnDestroy {
     const gridHelper = new THREE.GridHelper(20);
     this.scene.add(gridHelper);
 
+    // sphere mesh
+
+         /*
+    +---------------------------------------------------------------------+                                                                                                     
+    |                                                                     |                                                                                                     
+    | Create sphere Mesh                                                  |
+    |     - uses sphereGeometry → creates a sphere with  dimensions       |
+    |     - use MeshBasicMaterial → pass Material Color  ,  wireframe     |   
+    |     - use THREE.Mesh → pass geometry and material to create a mesh 
+    |     - set position of sphere
+    |      → add to scene                                                 |                                                                                                     
+    |                                                                     |                                                                                                     
+    +---------^-----------------------------------------------------------+     
+    */
+
+    const sphereGeometry = new THREE.SphereGeometry(2);
+    const sphereMaterial = new THREE.MeshBasicMaterial({color: 0x0000FF, wireframe: false});
+    //const sphereMaterial = new THREE.MeshStandardMaterial({color: 0x0000FF, wireframe: true});
+    //const sphereMaterial = new THREE.MeshLambertMaterial({color: 0x0000FF, wireframe: true});
+    const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+    this.scene.add(sphere);
+    
+    sphere.position.set(-4,4,0);
 
 
 
