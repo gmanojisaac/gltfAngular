@@ -258,19 +258,25 @@ export class EngineService implements OnDestroy {
     | installed dat.gui  ( using command npm install dat.gui)                                                
     |     - A GUI is added to allow real-time color changes of a sphere's
             material via a color picker.      
-    |                                                                                                                                                      
+    |     - wireframe                                                                                                                                                 
     |                                                                     |                                                                                                     
     +---------^-----------------------------------------------------------+     
     */
 
     const gui = new dat.GUI();
     const options = {
-    sphereColor: '#ffea00'
+    sphereColor: '#ffea00',
+    wireframe: false,
       };
     gui.addColor(options, 'sphereColor').onChange(function(e){
     sphere.material.color.set(e);
     });
-
+    
+    gui.add(options, 'wireframe').onChange(function (e) {
+      sphere.material.wireframe = e;
+    });
+    
+    
 
     //Create Controls
 
