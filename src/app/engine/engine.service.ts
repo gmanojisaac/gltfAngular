@@ -19,13 +19,11 @@ export class EngineService implements OnDestroy {
   private camera: THREE.PerspectiveCamera;
   private scene: THREE.Scene;
   private light: THREE.AmbientLight;
-
   private cube: THREE.Mesh;
-
   private frameId: number = null;
-
   private model!: THREE.Group; // Store the model
   private controls!: OrbitControls;
+
 
   public constructor(private ngZone: NgZone) {
   }
@@ -64,6 +62,7 @@ export class EngineService implements OnDestroy {
     |  - for cast shadow ->shadowmap enabled to true                                                   |                                                                                                     
     +---------^--------------------------------------------+     
     */
+
     this.canvas = canvas.nativeElement;
 
     this.renderer = new THREE.WebGLRenderer({
@@ -91,19 +90,28 @@ export class EngineService implements OnDestroy {
     this.camera = new THREE.PerspectiveCamera(
       75, window.innerWidth / window.innerHeight, 0.01, 100
     );
-    this.camera.position.z = 5;
-    this.scene.add(this.camera);
+    //this.camera.position.z = 5;
+    //this.scene.add(this.camera);
+    this.camera.position.set(0, 2, 5);
 
-    // soft white light
+    //  added axesHelper
+    const axesHelper = new THREE.AxesHelper(5);
+    this.scene.add(axesHelper);
+    
+/*
+    // soft white light(Ambient light)
+
     this.light = new THREE.AmbientLight(0x404040);
     this.light.position.z = 10;
-   this.scene.add(this.light);
+    this.scene.add(this.light);
 
 /*
-   +-----------------------------------------------------------------+                                                                                                     
+
+
+  // directional light
+  +-----------------------------------------------------------------+                                                                                                     
    |                                                                 |                                                                                                     
-   | 
-   |  directional light  
+ 
    |    -use threejs.directionallight -> create castshadow           |                                                                                                     
    |    -use directionallight -> pass color and intensity
    |    -set positions and enable castshadow true
@@ -114,11 +122,9 @@ export class EngineService implements OnDestroy {
    +---------^-------------------------------------------------------+     
    */
 
-  // directional light
+  /*
    const directionalLight = new THREE.DirectionalLight(0xFFFFFF , 1);
-    directionalLight.position.x +=20
-    directionalLight.position.y +=20
-    directionalLight.position.z +=20
+    directionalLight.position.set(20, 20, 20);
     directionalLight.castShadow = true;
     this.scene.add(directionalLight);
 
@@ -127,15 +133,10 @@ export class EngineService implements OnDestroy {
     directionalLight.shadow.camera.left += 25
     directionalLight.shadow.camera.right += 25
 
+    // Helper for directional light
+
     this.scene.add( new THREE.CameraHelper(directionalLight.shadow.camera) );
 
-    function animate() {
-      const time = Date.now() * 0.0005;
-     directionalLight.position.x = Math.sin(time) * 20;
-     directionalLight.position.z = Math.cos(time) * 20;
-      this.renderer.render(this.scene, this.camera);
-      requestAnimationFrame(animate);
-    }
 
       // SpotLight
 
@@ -155,11 +156,15 @@ export class EngineService implements OnDestroy {
    +---------^-------------------------------------------------------+     
    */
 
+   /*
       const spotlight = new THREE.SpotLight(0xFFFFFF);
       this.scene.add(spotlight);
       spotlight.position.set(-100, 100, 0);
       spotlight.castShadow = true;
       spotlight.angle = 0.2;
+
+      // Helper for spot light
+
       const sLightHelper = new THREE.SpotLightHelper(spotlight);
       this.scene.add(sLightHelper);
 
@@ -178,24 +183,60 @@ export class EngineService implements OnDestroy {
     |                                                                     |                                                                                                     
     +---------^-----------------------------------------------------------+     
     */
-    const geometry = new THREE.BoxGeometry(4, 4, 4);
+
+    
+    const geometry = new THREE.BoxGeometry(2, 2, 2);
     const material = new THREE.MeshBasicMaterial({color: 0x00ff00});
     this.cube = new THREE.Mesh(geometry, material);
-    this.cube.position.x = 5;
-    this.cube.position.y = 5;
-     this.cube.position.z = 5;
-
-
+    this.cube.position.x = 0;
+    this.cube.position.y = 0;
+     this.cube.position.z = 0;
      this.cube.receiveShadow = true;
      this.cube.castShadow = true;
      this.scene.add(this.cube); 
+    
+
+      // Plane mesh
+
+        /*
+    +---------------------------------------------------------------------+                                                                                                     
+    |                                                                     |                                                                                                     
+    | Create plane Mesh                                                    |
+    |     - uses planeGeometry → creates a plane with 20 , 20 dimensions |
+    |     - use MeshBasicMaterial → pass Material Color  .double side view |   
+    |     - use THREE.Mesh → pass geometry and material to create a mesh 
+    |     - set position of plane
+          - set rotation of plane 
+          - set recieve shadow to be true 
+          -added a grid helper
+    |      → add to scene                                                 |                                                                                                     
+    |                                                                     |                                                                                                     
+    +---------^-----------------------------------------------------------+     
+    */
+    const planeGeometry = new THREE.PlaneGeometry(20, 20);
+    const planeMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFFF, side: THREE.DoubleSide });
+    //const planeMaterial = new THREE.MeshStandardMaterial({ color: 0xFFFFFF, side: THREE.DoubleSide });
+    const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+    plane.rotation.x = - Math.PI / 2; // Rotate the plane to be horizontal
+    //plane.position.y = -1;
+    plane.receiveShadow = true;
+    this.scene.add(plane);
+
+    // helper for grid
+    const gridHelper = new THREE.GridHelper(20);
+    this.scene.add(gridHelper);
+
+
+
+
     //Create Controls
+
     /*
     +-----------------------------------------------------------------------+                                                                                                     
     |                                                                       |                                                                                                     
     | Create Orbit controls                                                 |
     |     - uses OrbitControls → creates a basic mouse control              |
-    |       -   Pass previously created camera and domElement from renderer |   
+    |     - Pass previously created camera and domElement from renderer     |   
     |     - use minDistance / maxDistance  → pass values                    |
     |     - use target.set → pass values for the focus point of the controls|
     |         -the .object orbits around this                               |
@@ -203,14 +244,15 @@ export class EngineService implements OnDestroy {
     |                                                                       |                                                                                                     
     +---------^-------------------------------------------------------------+     
     */
+
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.minDistance = 5;
     this.controls.maxDistance = 10;
-    this.controls.target.set(15, 0, 0);
+    this.controls.target.set(0, 2, 2);
     this.controls.update();
 
   }
-
+   
 
   
   public animate(): void {
@@ -258,13 +300,15 @@ export class EngineService implements OnDestroy {
     this.frameId = requestAnimationFrame(() => {
       this.render();
     });
+
+    this.cube.rotation.x += 0.01;
+    this.cube.rotation.y += 0.01;
         // Rotate the model if it is loaded
         if (this.model) {
           this.model.rotation.y += 0.01; // Adjust the rotation speed as needed
         }
 
-    this.cube.rotation.x += 0.01;
-    this.cube.rotation.y += 0.01;
+    
     this.renderer.render(this.scene, this.camera);
   }
 
@@ -314,8 +358,8 @@ export class EngineService implements OnDestroy {
     .load('quarry_01_1k.hdr', texture => {
       console.log
       texture.mapping = THREE.EquirectangularReflectionMapping;
-     //this.scene.background = texture;
-      //this.scene.environment = texture;
+     this.scene.background = texture;
+     this.scene.environment = texture;
     });
 
     const loader = new GLTFLoader();
@@ -332,7 +376,7 @@ export class EngineService implements OnDestroy {
 
         // Update the model's world matrix
        this.model.updateMatrixWorld(true);
-
+       this.scene.add(this.model);
         
       },
       (xhr) => {
