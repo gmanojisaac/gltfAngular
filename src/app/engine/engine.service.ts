@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
+import * as dat from 'dat.gui';
 
     /*
     +-------------------+                                                                                                     
@@ -247,9 +248,28 @@ export class EngineService implements OnDestroy {
     //const sphereMaterial = new THREE.MeshLambertMaterial({color: 0x0000FF, wireframe: true});
     const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
     this.scene.add(sphere);
-    
     sphere.position.set(-4,4,0);
 
+    //added gui
+
+           /*
+    +---------------------------------------------------------------------+                                                                                                     
+    |                                                                     |                                                                                                     
+    | installed dat.gui  ( using command npm install dat.gui)                                                
+    |     - A GUI is added to allow real-time color changes of a sphere's
+            material via a color picker.      
+    |                                                                                                                                                      
+    |                                                                     |                                                                                                     
+    +---------^-----------------------------------------------------------+     
+    */
+
+    const gui = new dat.GUI();
+    const options = {
+    sphereColor: '#ffea00'
+      };
+    gui.addColor(options, 'sphereColor').onChange(function(e){
+    sphere.material.color.set(e);
+    });
 
 
     //Create Controls
@@ -393,7 +413,7 @@ export class EngineService implements OnDestroy {
         
        //this.scene.add(gltf.scene);
 
-        this.model.position.set(1, 1, 1);
+        this.model.position.set(4, 4, 4);
         //this.model.rotation.set(Math.PI / 4, Math.PI / 4, 0);
         this.model.scale.set(4, 4, 4);
 
