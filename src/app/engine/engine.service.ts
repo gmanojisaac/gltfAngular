@@ -24,8 +24,16 @@ export class EngineService implements OnDestroy {
   private frameId: number = null;
   private model!: THREE.Group; // Store the model
   private controls!: OrbitControls;
-
-
+  private sphere: THREE.Mesh;
+  private step = 0; // Step for sphere animation
+  private options = {
+    sphereColor: '#ffea00',
+    wireframe: false,
+    speed: 0.01, // Animation speed for the sphere
+    angle: 0.2,
+    penumbra: 0,
+    intensity: 1
+  };
   public constructor(private ngZone: NgZone) {
   }
 
@@ -36,8 +44,8 @@ export class EngineService implements OnDestroy {
     |   ngOnDestroy- TBD                                                          |
     |     -checks if frameId is not null,if null it cancels  animationframe
     |     -checks if the renderer is not null,if null it cleans up the renderer 
-    |      -sets the canvas to null                 |                                                                                                     
-    +---------^---------------------------------------+     
+    |      -sets the canvas to null                                                                                                                    
+    +---------^--------------------------------------------------------------------+     
     */
 
   public ngOnDestroy(): void {
@@ -93,50 +101,63 @@ export class EngineService implements OnDestroy {
     );
     //this.camera.position.z = 5;
     //this.scene.add(this.camera);
-    this.camera.position.set(0, 2, 5);
+    this.camera.position.set(4, 0, 4);
 
     //  added axesHelper
     const axesHelper = new THREE.AxesHelper(5);
     this.scene.add(axesHelper);
-    
+
+  /*  
+// ambient light
++-----------------------------------------------------------------+                                                                                                     
+|                                                                 |                                                                                                     
+
+|    -use threejs.AmbientLight -> create AmbientLight                                                                                                              
+|    -use AmbientLight -> pass color 
+|    - add to scene                                                                                                                                             
++---------^-------------------------------------------------------+     
+*/
+
 /*
-    // soft white light(Ambient light)
-
-    this.light = new THREE.AmbientLight(0x404040);
-    this.light.position.z = 10;
-    this.scene.add(this.light);
+//(Ambient light)
+    const ambientLight = new THREE.AmbientLight(0x333333);
+    this.scene.add(ambientLight);
+*/
 
 /*
-
-
   // directional light
   +-----------------------------------------------------------------+                                                                                                     
    |                                                                 |                                                                                                     
  
-   |    -use threejs.directionallight -> create castshadow           |                                                                                                     
+   |    -use threejs.directionallight -> create directionallight           |                                                                                                     
    |    -use directionallight -> pass color and intensity
    |    -set positions and enable castshadow true
    |    -add to scene
-   |   optional (add a helper camera ) for shadow
-   |    -optional (set the size of camera)
-   |    - add to scene                                                |                                                                                                   
+   |   optional (add a DirectionalLightHelper) for DirectionalLight
+   |    - add to scene      
+        optional (add a CameraHelper) for DirectionalLight shadow 
+   |    - add to scene                                           |                                                                                                   
    +---------^-------------------------------------------------------+     
    */
 
-  /*
-   const directionalLight = new THREE.DirectionalLight(0xFFFFFF , 1);
-    directionalLight.position.set(20, 20, 20);
-    directionalLight.castShadow = true;
-    this.scene.add(directionalLight);
 
-    directionalLight.shadow.camera.top += 25
-    directionalLight.shadow.camera.bottom += 25
-    directionalLight.shadow.camera.left += 25
-    directionalLight.shadow.camera.right += 25
+   /*
+   // (directional light)
+      const directionalLight = new THREE.DirectionalLight(0xFFFFFF, 0.8);
+       this.scene.add(directionalLight);
+      directionalLight.position.set(-30, 50, 0)
+      directionalLight.castShadow = true;
+      directionalLight.shadow.camera.bottom = -12
+     
+   //helper for directional light
+   
+      const dLightHelper = new THREE.DirectionalLightHelper(directionalLight, 5);
+       this.scene.add(dLightHelper);
 
-    // Helper for directional light
-
-    this.scene.add( new THREE.CameraHelper(directionalLight.shadow.camera) );
+       const dLightShadowHelper = new THREE.CameraHelper(directionalLight.shadow.camera);
+       this.scene.add(dLightShadowHelper);
+   
+*/
 
 
       // SpotLight
@@ -157,18 +178,17 @@ export class EngineService implements OnDestroy {
    +---------^-------------------------------------------------------+     
    */
 
-   /*
-      const spotlight = new THREE.SpotLight(0xFFFFFF);
-      this.scene.add(spotlight);
-      spotlight.position.set(-100, 100, 0);
-      spotlight.castShadow = true;
-      spotlight.angle = 0.2;
+   
+   const spotlight = new THREE.SpotLight(0xFFFFFF);
+   this.scene.add(spotlight);
+   spotlight.position.set(-100, 100, 0);
+   spotlight.castShadow = true;
+   spotlight.angle = 0.2;
 
-      // Helper for spot light
+   // Helper for spot light
 
-      const sLightHelper = new THREE.SpotLightHelper(spotlight);
-      this.scene.add(sLightHelper);
-
+   const sLightHelper = new THREE.SpotLightHelper(spotlight);
+   this.scene.add(sLightHelper);
 
 
     // Cube mesh
@@ -187,10 +207,11 @@ export class EngineService implements OnDestroy {
 
     
     const geometry = new THREE.BoxGeometry(2, 2, 2);
-    const material = new THREE.MeshBasicMaterial({color: 0x00ff00});
+    //const material = new THREE.MeshBasicMaterial({color: 0x00ff00});
+    const material = new THREE.MeshStandardMaterial({color: 0x00ff00});
     this.cube = new THREE.Mesh(geometry, material);
     this.cube.position.x = 0;
-    this.cube.position.y = 0;
+    this.cube.position.y = 2;
      this.cube.position.z = 0;
      this.cube.receiveShadow = true;
      this.cube.castShadow = true;
@@ -215,8 +236,8 @@ export class EngineService implements OnDestroy {
     +---------^-----------------------------------------------------------+     
     */
     const planeGeometry = new THREE.PlaneGeometry(20, 20);
-    const planeMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFFF, side: THREE.DoubleSide });
-    //const planeMaterial = new THREE.MeshStandardMaterial({ color: 0xFFFFFF, side: THREE.DoubleSide });
+    //const planeMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFFF, side: THREE.DoubleSide });
+    const planeMaterial = new THREE.MeshStandardMaterial({ color: 0xFFFFFF, side: THREE.DoubleSide });
     const plane = new THREE.Mesh(planeGeometry, planeMaterial);
     plane.rotation.x = - Math.PI / 2; // Rotate the plane to be horizontal
     //plane.position.y = -1;
@@ -243,12 +264,15 @@ export class EngineService implements OnDestroy {
     */
 
     const sphereGeometry = new THREE.SphereGeometry(2);
-    const sphereMaterial = new THREE.MeshBasicMaterial({color: 0x0000FF, wireframe: false});
-    //const sphereMaterial = new THREE.MeshStandardMaterial({color: 0x0000FF, wireframe: true});
-    //const sphereMaterial = new THREE.MeshLambertMaterial({color: 0x0000FF, wireframe: true});
-    const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-    this.scene.add(sphere);
-    sphere.position.set(-4,4,0);
+    //const sphereMaterial = new THREE.MeshBasicMaterial({color: 0xFFFFFF, wireframe: false});
+    const sphereMaterial = new THREE.MeshStandardMaterial({color: 0x0000FF, wireframe: false});
+    //const sphereMaterial = new THREE.MeshLambertMaterial({color: 0x0000FF, wireframe: false});
+    
+    this.sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+    this.sphere.position.set(-4, 2, 0); // Initial position
+    this.sphere.castShadow = true;
+    this.scene.add(this.sphere);
+    
 
     //added gui
 
@@ -257,26 +281,29 @@ export class EngineService implements OnDestroy {
     |                                                                     |                                                                                                     
     | installed dat.gui  ( using command npm install dat.gui)                                                
     |     - A GUI is added to allow real-time color changes of a sphere's
-            material via a color picker.      
-    |     - wireframe                                                                                                                                                 
+            material via a color picker.
+            -use THREE.js MeshBasicMaterial → pass Material Color     
+    |     - wireframe(-use THREE.js MeshBasicMaterial → pass wireframe )    
+          -speed
+          -angle
+          -penumbra
+          -intensity                                                                                                                                            
     |                                                                     |                                                                                                     
     +---------^-----------------------------------------------------------+     
     */
 
     const gui = new dat.GUI();
-    const options = {
-    sphereColor: '#ffea00',
-    wireframe: false,
-      };
-    gui.addColor(options, 'sphereColor').onChange(function(e){
-    sphere.material.color.set(e);
+   
+    gui.addColor(this.options, 'sphereColor').onChange((e) => {
+      (this.sphere.material as THREE.MeshBasicMaterial).color.set(e);
     });
-    
-    gui.add(options, 'wireframe').onChange(function (e) {
-      sphere.material.wireframe = e;
+    gui.add(this.options, 'wireframe').onChange((e) => {
+      (this.sphere.material as THREE.MeshBasicMaterial).wireframe = e;
     });
-    
-    
+    gui.add(this.options, 'speed', 0, 0.1);
+    gui.add(this.options, 'angle', 0, 1);
+    gui.add(this.options, 'penumbra', 0, 1);
+    gui.add(this.options, 'intensity', 0, 1);
 
     //Create Controls
 
@@ -337,12 +364,14 @@ export class EngineService implements OnDestroy {
     +-------------------------------------------------------------------------------------+                                                                                                     
     |                                                                                     |                                                                                                     
     | Schedule Frames                                                                     |
-    |      - Schedule the next frame to be rendered using requestAnimationFrame           |
-    |   → set model rotation for y axis                                                   |
-    |   → set cube rotation for x & y axis                                                |
+    |    for cube  - Schedule the next frame to be rendered using requestAnimationFrame           |
+    |                → set model rotation for y axis                                                   |
+    |                → set cube rotation for x & y axis  
+    |   for sphere  -set speed and bounce    
+    |   for model   -set rotation                                          |
     |   → render the scene from the perspective of the camera.                            |                                                                                                     
     |                                                                                     |                                                                                                     
-    +---------^---------------------------------------------------------------------------+     
+    +---------^------------- --------------------------------------------------------------+     
     */
 
   public render(): void {
@@ -352,12 +381,20 @@ export class EngineService implements OnDestroy {
 
     this.cube.rotation.x += 0.01;
     this.cube.rotation.y += 0.01;
+
+    // Update the step value for the sphere animation
+    this.step += this.options.speed;
+    // Apply a sine wave function to the sphere's Y position
+    this.sphere.position.y = 2 + Math.abs(Math.sin(this.step) * 2);
+
+  
         // Rotate the model if it is loaded
         if (this.model) {
-          this.model.rotation.y += 0.01; // Adjust the rotation speed as needed
+         this.model.rotation.y += 0.01; // Adjust the rotation speed as needed
         }
+       
 
-    
+
     this.renderer.render(this.scene, this.camera);
   }
 
