@@ -103,6 +103,7 @@ export class EngineService implements OnDestroy {
     //this.scene.add(this.camera);
     this.camera.position.set(4, 0, 4);
 
+  
     //  added axesHelper
     const axesHelper = new THREE.AxesHelper(5);
     this.scene.add(axesHelper);
@@ -201,14 +202,22 @@ export class EngineService implements OnDestroy {
     |     - use THREE.Mesh → pass geometry and material to create a mesh 
     |     - set position of cube
     |      → add to scene                                                 |                                                                                                     
-    |                                                                     |                                                                                                     
+    |                       ---> added a texture for cube
+    |       uses THREE.js Textureloader -> creates texture
+    |       uses a jpg image as a texture                                              |                                                                                                     
     +---------^-----------------------------------------------------------+     
     */
 
-    
+     // Load the texture and apply it to the cube
+     const textureLoader = new THREE.TextureLoader();
+     const texture = textureLoader.load('assets/pexels.jpg'); // Replace with your JPG image path
+     const cubeMaterial = new THREE.MeshStandardMaterial({ map: texture });
     const geometry = new THREE.BoxGeometry(2, 2, 2);
     //const material = new THREE.MeshBasicMaterial({color: 0x00ff00});
-    const material = new THREE.MeshStandardMaterial({color: 0x00ff00});
+    const material = new THREE.MeshStandardMaterial({
+      //color: 0x00ff00
+     map:texture
+    });
     this.cube = new THREE.Mesh(geometry, material);
     this.cube.position.x = 0;
     this.cube.position.y = 2;
