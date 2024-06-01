@@ -194,18 +194,21 @@ export class EngineService implements OnDestroy {
 
     // Cube mesh
     /*
-    +---------------------------------------------------------------------+                                                                                                     
-    |                                                                     |                                                                                                     
-    | Create Cube Mesh                                                    |
-    |     - uses BoxGeometry → creates a basic cube with 1,1,1 dimensions |
-    |     - use MeshBasicMaterial → pass Material Color                   |   
+    +------------------------------------------------------------------------------------------------+                                                                                                     
+    |                                                                                                |                                                                                                     
+    | Create Cube Mesh                                                                               |
+    |     - uses BoxGeometry → creates a basic cube with 1,1,1 dimensions                            |
+    |     - use MeshBasicMaterial → pass Material Color                                               |   
     |     - use THREE.Mesh → pass geometry and material to create a mesh 
     |     - set position of cube
-    |      → add to scene                                                 |                                                                                                     
+    |      → add to scene                                                                             |                                                                                                     
     |                       ---> added a texture for cube
     |       uses THREE.js Textureloader -> creates texture
-    |       uses a jpg image as a texture                                              |                                                                                                     
-    +---------^-----------------------------------------------------------+     
+    |       uses a jpg image as a texture(from assets)
+    |       if you need different texture in each sides,use this-->
+    |   --const boxMultiMaterial = [ new THREE.MeshBasicMaterial({map: textureLoader(image1.jpg)}), 
+      repeat for next image                                                                           |                                                                                                     
+    +---------^---------------------------------------------------------------------------------------+     
     */
 
      // Load the texture and apply it to the cube
