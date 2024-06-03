@@ -287,7 +287,7 @@ export class EngineService implements OnDestroy {
     this.sphere.position.set(-4, 2, 0); // Initial position
     this.sphere.castShadow = true;
     this.pivot.add(this.sphere); // Add the sphere to the pivot
-    this.scene.add(this.sphere);
+   //this.scene.add(this.sphere);
     this.scene.add(this.pivot); // Add the pivot to the scene
     
 
