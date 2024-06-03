@@ -23,6 +23,8 @@ export class EngineService implements OnDestroy {
   private cube: THREE.Mesh;
   private frameId: number = null;
   private model!: THREE.Group; // Store the model
+  private donkeyModel!: THREE.Group; // Store the donkey model
+  private pivot: THREE.Object3D; // Pivot point for rotation
   private controls!: OrbitControls;
   private sphere: THREE.Mesh;
   private step = 0; // Step for sphere animation
@@ -35,6 +37,7 @@ export class EngineService implements OnDestroy {
     intensity: 1
   };
   public constructor(private ngZone: NgZone) {
+    this.pivot = new THREE.Object3D(); // Initialize the pivot point
   }
 
   
@@ -247,7 +250,7 @@ export class EngineService implements OnDestroy {
     |                                                                     |                                                                                                     
     +---------^-----------------------------------------------------------+     
     */
-    const planeGeometry = new THREE.PlaneGeometry(20, 20);
+    const planeGeometry = new THREE.PlaneGeometry(20, 20, 20, 20);
     //const planeMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFFF, side: THREE.DoubleSide });
     const planeMaterial = new THREE.MeshStandardMaterial({ color: 0xFFFFFF, side: THREE.DoubleSide });
     const plane = new THREE.Mesh(planeGeometry, planeMaterial);
@@ -283,7 +286,9 @@ export class EngineService implements OnDestroy {
     this.sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
     this.sphere.position.set(-4, 2, 0); // Initial position
     this.sphere.castShadow = true;
+    this.pivot.add(this.sphere); // Add the sphere to the pivot
     this.scene.add(this.sphere);
+    this.scene.add(this.pivot); // Add the pivot to the scene
     
 
     //added gui
@@ -338,6 +343,7 @@ export class EngineService implements OnDestroy {
     this.controls.maxDistance = 10;
     this.controls.target.set(0, 2, 2);
     this.controls.update();
+    this.scene.add(this.pivot); // Add the pivot point to the scene
 
   }
    
@@ -398,14 +404,20 @@ export class EngineService implements OnDestroy {
     this.step += this.options.speed;
     // Apply a sine wave function to the sphere's Y position
     this.sphere.position.y = 2 + Math.abs(Math.sin(this.step) * 2);
-
+/*
   
         // Rotate the model if it is loaded
         if (this.model) {
          this.model.rotation.y += 0.01; // Adjust the rotation speed as needed
         }
-       
+       */
+        if (this.model) {
 
+          this.pivot.rotation.y += 0.01; // Rotate the pivot point
+    
+        }
+
+       
 
     this.renderer.render(this.scene, this.camera);
   }
@@ -448,42 +460,77 @@ export class EngineService implements OnDestroy {
     |                                                                                     |                                                                                                     
     +---------^---------------------------------------------------------------------------+     
     */
-
-  public loadModel(): void {
-
-    new RGBELoader()
-    .setPath('assets/')
-    .load('quarry_01_1k.hdr', texture => {
-      console.log
-      texture.mapping = THREE.EquirectangularReflectionMapping;
-     this.scene.background = texture;
-     this.scene.environment = texture;
+    public loadModel(): void {
+      // Load the environment texture
+      new RGBELoader()
+        .setPath('assets/')
+        .load('quarry_01_1k.hdr', texture => {
+          texture.mapping = THREE.EquirectangularReflectionMapping;
+          this.scene.background = texture;
+          this.scene.environment = texture;
+        });
+    
+      // Load the existing model
+      const loader = new GLTFLoader();
+      loader.load(
+        'assets/frame.glb',
+        (gltf) => {
+          this.model = gltf.scene;
+          this.model.position.set(4, 4, 4);
+          this.model.scale.set(4, 4, 4);
+          this.model.updateMatrixWorld(true);
+          this.scene.add(this.model);
+          this.pivot.add(this.model); // Add the model to the pivot
+        },
+        (xhr) => {
+          console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
+        },
+        (error) => {
+          console.error('An error happened', error);
+        }
+      );
+    
+      // Load the additional model (donkey.gltf)
+      loader.load(
+        'assets/Donkey.gltf', // Adjust the path to your additional .glb file
+        (gltf) => {
+          const donkeyModel = gltf.scene;
+          // Position, scale, and add the model to the scene
+          donkeyModel.position.set(0, 0, 3.5); // Adjust position as needed
+          donkeyModel.scale.set(1, 1, 1); // Adjust scale as needed
+          this.scene.add(donkeyModel);
+        
+      this.traverseMaterials(donkeyModel);
     });
-
-    const loader = new GLTFLoader();
-    loader.load(
-      'assets/frame.glb', // Adjust the path to your .glb file
-      (gltf) => {
-        this.model = gltf.scene; // Store the model
-        
-       //this.scene.add(gltf.scene);
-
-        this.model.position.set(4, 4, 4);
-        //this.model.rotation.set(Math.PI / 4, Math.PI / 4, 0);
-        this.model.scale.set(4, 4, 4);
-
-        // Update the model's world matrix
-       this.model.updateMatrixWorld(true);
-       this.scene.add(this.model);
-        
-      },
-      (xhr) => {
-        console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
-      },
-      (error) => {
-        console.error('An error happened', error);
-      }
-    );
   }
 
+  traverseMaterials(object: THREE.Object3D): void {
+    object.traverse((node) => {
+      if ((node as THREE.Mesh).isMesh) {
+        const mesh = node as THREE.Mesh;
+        const material = mesh.material as THREE.Material;
+
+        if (Array.isArray(material)) {
+          material.forEach(mat => this.setupGui(mat));
+        } else {
+          this.setupGui(material);
+        }
+      }
+    });
+  }
+
+  setupGui(material: THREE.Material): void {
+    const gui = new dat.GUI();
+    const materialFolder = gui.addFolder('Material Properties');
+
+    if ((material as THREE.MeshBasicMaterial).color) {
+      materialFolder.addColor((material as THREE.MeshBasicMaterial), 'color').onChange((colorValue) => {
+        (material as THREE.MeshBasicMaterial).color.set(colorValue);
+      });
+    }
+
+    materialFolder.add(material, 'wireframe');
+
+    materialFolder.open();
+  }
 }
