@@ -122,11 +122,11 @@ export class EngineService implements OnDestroy {
 +---------^-------------------------------------------------------+     
 */
 
-/*
+
 //(Ambient light)
     const ambientLight = new THREE.AmbientLight(0x333333);
     this.scene.add(ambientLight);
-*/
+
 
 /*
   // directional light
@@ -145,7 +145,7 @@ export class EngineService implements OnDestroy {
    */
 
 
-   /*
+   
    // (directional light)
       const directionalLight = new THREE.DirectionalLight(0xFFFFFF, 0.8);
        this.scene.add(directionalLight);
@@ -153,6 +153,7 @@ export class EngineService implements OnDestroy {
       directionalLight.castShadow = true;
       directionalLight.shadow.camera.bottom = -12
      
+      
    //helper for directional light
    
       const dLightHelper = new THREE.DirectionalLightHelper(directionalLight, 5);
@@ -161,7 +162,7 @@ export class EngineService implements OnDestroy {
        const dLightShadowHelper = new THREE.CameraHelper(directionalLight.shadow.camera);
        this.scene.add(dLightShadowHelper);
    
-*/
+
 
 
       // SpotLight
@@ -182,7 +183,7 @@ export class EngineService implements OnDestroy {
    +---------^-------------------------------------------------------+     
    */
 
-   
+   /*
    const spotlight = new THREE.SpotLight(0xFFFFFF);
    this.scene.add(spotlight);
    spotlight.position.set(-100, 100, 0);
@@ -193,7 +194,7 @@ export class EngineService implements OnDestroy {
 
    const sLightHelper = new THREE.SpotLightHelper(spotlight);
    this.scene.add(sLightHelper);
-
+*/
 
     // Cube mesh
     /*
@@ -480,6 +481,14 @@ export class EngineService implements OnDestroy {
           this.model.position.set(4, 4, 4);
           this.model.scale.set(4, 4, 4);
           this.model.updateMatrixWorld(true);
+
+            // Enable shadow casting for each mesh in the model
+          this.model.traverse((node) => {
+        if (node instanceof THREE.Mesh) {
+          node.castShadow = true;  // Enable shadow casting
+          node.receiveShadow = true;  // Enable shadow receiving if needed
+        }
+      });
           this.scene.add(this.model);
           this.pivot.add(this.model); // Add the model to the pivot
         },
@@ -499,7 +508,16 @@ export class EngineService implements OnDestroy {
           // Position, scale, and add the model to the scene
           donkeyModel.position.set(0, 0, 3.5); // Adjust position as needed
           donkeyModel.scale.set(1, 1, 1); // Adjust scale as needed
-          this.scene.add(donkeyModel);
+
+             // Enable shadow casting for each mesh in the donkey model
+            donkeyModel.traverse((node) => {
+        if (node instanceof THREE.Mesh) {
+          node.castShadow = true;  // Enable shadow casting
+          node.receiveShadow = true;  // Enable shadow receiving if needed
+        }
+      });
+
+      this.scene.add(donkeyModel);
         
       this.traverseMaterials(donkeyModel);
     });
