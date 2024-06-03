@@ -475,6 +475,7 @@ export class EngineService implements OnDestroy {
       loader.load(
         'assets/frame.glb',
         (gltf) => {
+
           this.model = gltf.scene;
           this.model.position.set(4, 4, 4);
           this.model.scale.set(4, 4, 4);
