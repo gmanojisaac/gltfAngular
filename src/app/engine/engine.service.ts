@@ -274,7 +274,8 @@ export class EngineService implements OnDestroy {
     |     - use MeshBasicMaterial → pass Material Color  ,  wireframe     |   
     |     - use THREE.Mesh → pass geometry and material to create a mesh 
     |     - set position of sphere
-    |      → add to scene                                                 |                                                                                                     
+    |      → add to scene 
+    |      -> add pivot points                                                |                                                                                                     
     |                                                                     |                                                                                                     
     +---------^-----------------------------------------------------------+     
     */
@@ -334,7 +335,8 @@ export class EngineService implements OnDestroy {
     |     - use minDistance / maxDistance  → pass values                    |
     |     - use target.set → pass values for the focus point of the controls|
     |         -the .object orbits around this                               |
-    |      - Update the controls with above changes                         |                                                                                                     
+    |      - Update the controls with above changes
+    |      - Add the pivot point to the scene                               |                                                                                                     
     |                                                                       |                                                                                                     
     +---------^-------------------------------------------------------------+     
     */
@@ -387,7 +389,8 @@ export class EngineService implements OnDestroy {
     |                → set model rotation for y axis                                                   |
     |                → set cube rotation for x & y axis  
     |   for sphere  -set speed and bounce    
-    |   for model   -set rotation                                          |
+    |   for model   -set rotation   
+    |   -> set pivot points                                       |
     |   → render the scene from the perspective of the camera.                            |                                                                                                     
     |                                                                                     |                                                                                                     
     +---------^------------- --------------------------------------------------------------+     
@@ -450,14 +453,30 @@ export class EngineService implements OnDestroy {
     |  - Uses RGBELoader to load an HDR texture from the assets                           |
     |     → configure texture mapping --> uses THREE.EquirectangularReflectionMapping     |
     |     → set scene background texture                                                  |
-    |     → set scene environment texture                                                 |
-    |  - uses GLTFLoader to load a GLTF model                                             |
+    |     → set scene environment texture  .
+    |     ->enable castshadow
+    |     ->enable recieving shadow                                                 |
+    |  - uses GLTFLoader to load a GLTF model  (frame)                                           |
     |     → gltfmodel once loaded,store it in model                                       |
     |     → add to the scene                                                              |
     |     → set the position of model                                                     |
     |     → set the scale of model                                                        |
     |  → updates updateMatrixWorld to the model                                           |
-    |                                                                                     |               
+    |     ->enable castshadow
+    |     ->enable recieving shadow  
+    |     ->Add the model to the pivot  
+          -> uses loader logs the loading progress percentage
+          -> uses log console ,if any error occurs
+
+    | - uses GLTFLoader to load a GLTF model  (donkey)                                           |
+    |     → gltfmodel once loaded,store it in model                                       |
+    |     → add to the scene                                                              |
+    |     → set the position of model                                                     |
+    |     → set the scale of model                                                        |
+    |  → Enable shadow casting for each mesh in the model                                          |
+    |     ->enable castshadow
+    |     ->enable recieving shadow                                                                             |               
+    |     ->Add the model to the pivot                                                                                                    |               
     |                                                                                     |                                                                                                     
     +---------^---------------------------------------------------------------------------+     
     */
@@ -523,6 +542,19 @@ export class EngineService implements OnDestroy {
     });
   }
 
+ /*
+    +-------------------------------------------------------------------------------------+                                                                                                     
+    |   traverseMaterials uses                                                                                 |                                                                                                     
+    |     ->traverses through all nodes in the given object.                              |
+    |     → if a node is a mesh, it retrieves its material                                |
+    |     → set the size of the renderer to match the new window dimensions               |                                                                                                     
+    |                                                                                     |                                                                                                     
+    +---------^---------------------------------------------------------------------------+     
+    */
+
+
+
+
   traverseMaterials(object: THREE.Object3D): void {
     object.traverse((node) => {
       if ((node as THREE.Mesh).isMesh) {
@@ -537,6 +569,17 @@ export class EngineService implements OnDestroy {
       }
     });
   }
+
+ /*
+    +-------------------------------------------------------------------------------------+                                                                                                     
+    |   setupGui                                                                          |                                                                                                     
+    |     ->creates a dat.GUI interface for the given material,
+    |     ->allowing real-time adjustments to its properties 
+    |     ->such as color and wireframe mode.                                                                                                 
+    |                                                                                     |                                                                                                     
+    +---------^---------------------------------------------------------------------------+     
+    */
+
 
   setupGui(material: THREE.Material): void {
     const gui = new dat.GUI();
