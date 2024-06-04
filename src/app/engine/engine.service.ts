@@ -159,10 +159,10 @@ export class EngineService implements OnDestroy {
    //helper for directional light
    
       const dLightHelper = new THREE.DirectionalLightHelper(directionalLight, 5);
-       this.scene.add(dLightHelper);
+       //this.scene.add(dLightHelper);
 
        const dLightShadowHelper = new THREE.CameraHelper(directionalLight.shadow.camera);
-       this.scene.add(dLightShadowHelper);
+       //this.scene.add(dLightShadowHelper);
    
 
 
@@ -198,7 +198,23 @@ export class EngineService implements OnDestroy {
    this.scene.add(sLightHelper);
 */
 
+            // fog
+      /*    
+   +-----------------------------------------------------------------+                                                                                                     
+   |                                                                 |                                                                                                     
+
+   |    -use threejs.Fog -> create fog
+        - scene first to linear fog
+        - then to exponential fog, and 
+        -finally changes the renderer's background color to yellow.  |                                                                                                     
+                                                                                                                                        
+   +---------^-------------------------------------------------------+     
+   */
+
+
       // fog
+
+
     this.scene.fog = new THREE.Fog(0xFFFFFF, 0, 200);
     this.scene.fog = new THREE.FogExp2(0xFFFFFF, 0.01);
     this.renderer.setClearColor(0xffea00);
@@ -236,7 +252,7 @@ export class EngineService implements OnDestroy {
      map:texture
     });
     this.cube = new THREE.Mesh(geometry, material);
-    this.cube.position.x = 0;
+    this.cube.position.x = 10;
     this.cube.position.y = 2;
      this.cube.position.z = 0;
      this.cube.receiveShadow = true;
@@ -271,8 +287,8 @@ export class EngineService implements OnDestroy {
     this.scene.add(plane);
 
     // helper for grid
-    const gridHelper = new THREE.GridHelper(20);
-    this.scene.add(gridHelper);
+    //const gridHelper = new THREE.GridHelper(20);
+    //this.scene.add(gridHelper);
 
     // sphere mesh
 
@@ -299,8 +315,8 @@ export class EngineService implements OnDestroy {
     this.sphere.position.set(-4, 2, 0); // Initial position
     this.sphere.castShadow = true;
     this.pivot.add(this.sphere); // Add the sphere to the pivot
-   //this.scene.add(this.sphere);
-    this.scene.add(this.pivot); // Add the pivot to the scene
+   this.scene.add(this.sphere);
+    //this.scene.add(this.pivot); // Add the pivot to the scene
     
 
     //added gui
@@ -321,7 +337,7 @@ export class EngineService implements OnDestroy {
     +---------^-----------------------------------------------------------+     
     */
 
-    const gui = new dat.GUI();
+    /*const gui = new dat.GUI();
    
     gui.addColor(this.options, 'sphereColor').onChange((e) => {
       (this.sphere.material as THREE.MeshBasicMaterial).color.set(e);
@@ -332,7 +348,7 @@ export class EngineService implements OnDestroy {
     gui.add(this.options, 'speed', 0, 0.1);
     gui.add(this.options, 'angle', 0, 1);
     gui.add(this.options, 'penumbra', 0, 1);
-    gui.add(this.options, 'intensity', 0, 1);
+    gui.add(this.options, 'intensity', 0, 1);*/
 
     //Create Controls
 
@@ -353,10 +369,10 @@ export class EngineService implements OnDestroy {
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.minDistance = 5;
-    this.controls.maxDistance = 10;
+    this.controls.maxDistance = 20;
     this.controls.target.set(0, 2, 2);
     this.controls.update();
-    this.scene.add(this.pivot); // Add the pivot point to the scene
+    //this.scene.add(this.pivot); // Add the pivot point to the scene
 
   }
    
@@ -551,6 +567,7 @@ export class EngineService implements OnDestroy {
             //const clip = THREE.AnimationClip.findByName(clips, 'Eating');
             const action = mixer.clipAction(clip);
             action.play(); // Play each animation clip
+            
           });
 
 
@@ -590,7 +607,7 @@ export class EngineService implements OnDestroy {
         if (Array.isArray(material)) {
           material.forEach(mat => this.setupGui(mat));
         } else {
-          this.setupGui(material);
+          //this.setupGui(material);
         }
       }
     });
@@ -622,3 +639,184 @@ export class EngineService implements OnDestroy {
     materialFolder.open();
   }
 }
+
+/*
+const gui = new dat.GUI();
+
+const options = {
+'Main' : 0x2F3130,
+'Main light' : 0x0A0A0A,
+'Hooves' : 0x0F0B0D,
+'Hair' : 0x0A0A0A,
+'Muzzle' : 0X020202
+'Eye white' : 0XBEBEBE
+}
+
+const assetLoader = new GLTFLoader();
+assetLoader.load(fileUrl.href, function(gltf) {
+const model = gltf.scene;
+scene.add(model);
+console.log(model.getObjectByName('Cube_1'));
+
+ gui.addColor(options, 'Main ').onChange(function(e) {
+model.getObjectByName('Cube_1').material.color.setHex(e);
+});
+
+ gui.addColor(options, 'Main light').onChange(function(e) {
+model.getObjectByName('Cube_2').material.color.setHex(e);
+});
+ gui.addColor(options, 'Hooves').onChange(function(e) {
+model.getObjectByName('Cube_3').material.color.setHex(e);
+});
+ gui.addColor(options, 'Hair').onChange(function(e) {
+model.getObjectByName('Cube_4').material.color.setHex(e);
+});
+ gui.addColor(options, 'Muzzle').onChange(function(e) {
+model.getObjectByName('Cube_5').material.color.setHex(e);
+});
+ gui.addColor(options, 'Eye white').onChange(function(e) {
+model.getObjectByName('Cube_6').material.color.setHex(e);
+});
+*/
+
+/*
++--------------------------------------------------------------------------------------------+
+|   Setup Three.js scene  
+|                    -> Initialize the Three.js scene, camera, and renderer.     
++---------------------------------------------------------------------------------------------+
+        |
+        v
++----------------------------------------------------------------------------------+
+|   Load models  
+|             -> Load the necessary 3D models for the animation.   
++----------------------------------------------------------------------------------+
+        |
+        v
++-------------------------------------------------------------------------------------+
+|   Set up animations 
+|                 -> Prepare the animations for the loaded models.
++-------------------------------------------------------------------------------------+
+        |
+        v
++-----------------------------------------------------------------------------------+
+|   Create animationmixer   
+|               ->  Create an instance of THREE.AnimationMixer to control the animations.    
++-----------------------------------------------------------------------------------+
+        |
+        v
++---------------------------------------------------------------------------------+
+|   Add animation actions 
+|                    ->  Add the animation actions to the mixer.   
++---------------------------------------------------------------------------------+
+        |
+        v
++----------------------------------------------------------------------------------+
+|   Play animations  
+|                -> Start playing the animations using the mixer.
++----------------------------------------------------------------------------------+
+        |
+        v
++---------------------------------------------------------------------------------+
+|   Update animation mixer  
+|                -> Update the animation mixer within the animation loop.    
++---------------------------------------------------------------------------------+
+        |
+        v
++---------------------------------------------------------------------------------+
+|   Render scene   
+|            -> Render the scene using the Three.js renderer.   
++---------------------------------------------------------------------------------+
+*/
+
+
+//detailed block diagram of animated system
+
+/*
++----------------------------------------------------------------------------------+
+|  Animation System   
+            -> The top-level component that manages the entire animation process.
+            -> It coordinates the interaction between the different components to 
+            ensure smooth and efficient animation.
+
++----------------------------------------------------------------------------------+
+       |
+       v
++-----------------------------------------------------------------------------------+
+|  Animation Clips(AnimationClip)
+                    -> Contain the animation data for specific objects or characters.
+                    -> Each clip represents a single animation, such as a walk cycle 
+                    or a jump animation.
+                    -> Clips are used to store and manage the animation data, 
+                    making it easier to reuse and combine animations.
++-----------------------------------------------------------------------------------+
+       |
+       v
++-----------------------------------------------------------------------------------+
+|  Animation Mixer(AnimationMixer)
+                      -> Manages the playback and blending of multiple animation clips.
+                      -> It takes in multiple animation clips and blends them together 
+                      to create a seamless animation.
+                      -> mixer ensures that the animations are played back in the correct
+                       order and at the correct speed.
++------------------------------------------------------------------------------------+
+       |
+       v
++------------------------------------------------------------------------------------+
+|  Animation Actions(AnimationAction)
+                 -> Represent individual animations that can be played, paused, or blended.
+                 -> Actions are used to control the playback of animations, allowing you to
+                  start, stop, or pause an animation at specific points.
+  uses blendmode -> Actions can also be used to blend between different animations, creating 
+                  a smooth transition between them. 
++------------------------------------------------------------------------------------+
+       |
+       v
++-------------------------------------------------------------------------------------+
+|  Animation Object Group(AnimationObjectGroup)
+                -> Groups related objects together for animation purposes.
+                -> This allows you to manage multiple objects as a single unit, 
+                  making it easier to animate them together.
+                -> Object groups can be used to animate multiple objects simultaneously, 
+                  creating a more realistic and immersive experience.
++--------------------------------------------------------------------------------------+
+       |
+       v
++--------------------------------------------------------------------------------------------------+
+|  Keyframe Tracks(KeyframeTrack)
+              -> Groups related objects together for animation purposes.
+              -> Keyframes are specific points in time where the animation data is stored.
+              -> Keyframe tracks are used to store the animation data for a specific animation clip
+
+    A Keyframe Track consists of two main components:
+        Times: This is an array of time values that define when the keyframes occur.
+        Values: This is an array of values that define the animation data for each keyframe.
++--------------------------------------------------------------------------------------------------+
+       |
+       v
++-----------------------------------------------------------------------------------------------------+
+  The different subclasses of KeyframeTrack in Three.js are used to handle different types of animated values.
+            -> BooleanKeyframeTrack: This subclass is used for animating boolean values,
+                                      such as whether an object is visible or not.
+            -> ColorKeyframeTrack: This subclass is used for animating color values,
+                                       such as the color of an object.
+            -> NumberKeyframeTrack: This subclass is used for animating numerical values,
+                                      such as the position or scale of an object.
+            -> QuaternionKeyframeTrack: This subclass is used for animating quaternion values,
+                                         such as the rotation of an object.
+            -> StringKeyframeTrack: This subclass is used for animating string values, 
+                                     such as the text displayed on an object.
+            -> VectorKeyframeTrack: This subclass is used for animating vector values,
+                                    such as the position or direction of an object.
++------------------------------------------------------------------------------------------------------+
+       |
+       v
++---------------------------+
+|  Rendering 
++---------------------------+
+       |
+       v
++---------------+
+|  Display     |
++---------------+
+
+*/
