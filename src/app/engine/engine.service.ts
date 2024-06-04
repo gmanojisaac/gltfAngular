@@ -794,19 +794,83 @@ model.getObjectByName('Cube_6').material.color.setHex(e);
        |
        v
 +-----------------------------------------------------------------------------------------------------+
-  The different subclasses of KeyframeTrack in Three.js are used to handle different types of animated values.
-            -> BooleanKeyframeTrack: This subclass is used for animating boolean values,
-                                      such as whether an object is visible or not.
-            -> ColorKeyframeTrack: This subclass is used for animating color values,
+
+
+ // The different subclasses of KeyframeTrack in Three.js are used to handle different types of animated values.
+
++------------------------------------------------------------------------------------------------------+  
+-> BooleanKeyframeTrack: 
+              -> This subclass is used for animating boolean values,
+                  such as whether an object is visible or not.
+              -> It can be used to create animations that toggle the visibility or enabled state of objects.
+    Constructor -> The BooleanKeyframeTrack constructor takes three parameters: name, times, and values.
+                -> "name" is the name of the property being animated (e.g., .visible).
+                -> "times" is an array of time values that define when the keyframes occur.
+                -> "values" is an array of boolean values that define the animation data.
+    Limitations  -> The BooleanKeyframeTrack class does not support animating boolean values that are not
+                   true or false.
+                -> This is because boolean values are either true or false, and there is no need for animating 
+                  other values.
+    Workarounds -> To animate other types of values, you can use other types of keyframe tracks, such as NumberKey
+                 frameTrack or VectorKeyframeTrack.
++-------------------------------------------------------------------------------------------------------+
+
++--------------------------------------------------------------------------------------------------------+
+ -> ColorKeyframeTrack: This subclass is used for animating color values,
                                        such as the color of an object.
-            -> NumberKeyframeTrack: This subclass is used for animating numerical values,
++---------------------------------------------------------------------------------------------------------+
+
++---------------------------------------------------------------------------------------------------------+
+-> NumberKeyframeTrack: This subclass is used for animating numerical values,
                                       such as the position or scale of an object.
-            -> QuaternionKeyframeTrack: This subclass is used for animating quaternion values,
-                                         such as the rotation of an object.
-            -> StringKeyframeTrack: This subclass is used for animating string values, 
-                                     such as the text displayed on an object.
-            -> VectorKeyframeTrack: This subclass is used for animating vector values,
-                                    such as the position or direction of an object.
++---------------------------------------------------------------------------------------------------------+
+
++---------------------------------------------------------------------------------------------------------+
+-> QuaternionKeyframeTrack: 
+                        -> This subclass is used for animating quaternion values,
+                            such as the rotation of an object.
+                        -> It accepts an array of keyframe times and values, and an optional interpolation type.
+                        ->The class provides methods for setting and getting the keyframe values, 
+                           as well as for interpolating between them.
+      limitations   -> The QuaternionKeyframeTrack class does not support animating quaternions that span
+                     more than 180 degrees.
+                    -> This is because quaternions are not designed to handle rotations that exceed 180 degrees.
+      Workarounds   -> To animate quaternions that span more than 180 degrees, you can use a combination 
+                        of quaternions and Euler angles.
+                    -> Alternatively, you can use the setFromAxisAngle method to set the quaternion values directly.
++-------------------------------------------------------------------------------------------------------------+
+
++--------------------------------------------------------------------------------------------------------------+
+-> StringKeyframeTrack:
+                   -> This subclass is used for animating string values, 
+                      such as the text displayed on an object.
+                   -> It can be used to create animations that change the text or label of an object over time.
+    Constructor  -> The StringKeyframeTrack constructor takes three parameters: name, times, and values.
+                 -> "name" is the name of the property being animated (e.g., .text).
+                 -> "times" is an array of time values that define when the keyframes occur.
+                 -> "values" is an array of string values that define the animation data.
+    Limitations  -> The StringKeyframeTrack class does not support animating string values that are not valid strings.
+                 -> This is because the class is designed to work with string values and does not support other types of values.
+    Workarounds  -> To animate other types of values, you can use other types of keyframe tracks, such as 
+                    NumberKeyframeTrack or VectorKeyframeTrack.
++--------------------------------------------------------------------------------------------------------------+                                     
+
++------------------------------------------------------------------------------------------------------+
+-> VectorKeyframeTrack:
+                     ->  This subclass is used for animating vector values,
+                          such as the position or direction of an object.
+                     -> It can be used to create complex animations by defining keyframes for 
+                        the object's position, scale, or rotation.
+        constructor -> The VectorKeyframeTrack constructor takes three parameters: name, times, and values.
+               -> "name" is the name of the property being animated (e.g., .position).
+               -> "times" is an array of time values that define when the keyframes occur.
+               -> "values" is an array of vector values that define the animation data.
+      Limitations  -> The VectorKeyframeTrack class does not support animating vectors that span more 
+                      than 180 degrees
+                  -> This is because quaternions are not designed to handle rotations that exceed 180 degrees.
+      Workarounds  -> To animate quaternions that span more than 180 degrees, you can use a combination of 
+                      quaternions and Euler angles.
+                   -> Alternatively, you can use the setFromAxisAngle method to set the quaternion values directly.
 +------------------------------------------------------------------------------------------------------+
        |
        v
