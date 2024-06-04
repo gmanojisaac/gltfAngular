@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
-import * as dat from 'dat.gui';
+//import * as dat from 'dat.gui';
 
     /*
     +-------------------+                                                                                                     
@@ -28,6 +28,7 @@ export class EngineService implements OnDestroy {
   private controls!: OrbitControls;
   private mixer: THREE.AnimationMixer; // Declare the mixer variable
   private sphere: THREE.Mesh;
+  clock = new THREE.Clock();  
   private step = 0; // Step for sphere animation
   private options = {
     sphereColor: '#ffea00',
@@ -38,6 +39,7 @@ export class EngineService implements OnDestroy {
     intensity: 1
     
   };
+  
   public constructor(private ngZone: NgZone) {
     this.pivot = new THREE.Object3D(); // Initialize the pivot point
   }
@@ -159,10 +161,10 @@ export class EngineService implements OnDestroy {
    //helper for directional light
    
       const dLightHelper = new THREE.DirectionalLightHelper(directionalLight, 5);
-       //this.scene.add(dLightHelper);
+       this.scene.add(dLightHelper);
 
        const dLightShadowHelper = new THREE.CameraHelper(directionalLight.shadow.camera);
-       //this.scene.add(dLightShadowHelper);
+       this.scene.add(dLightShadowHelper);
    
 
 
@@ -252,7 +254,7 @@ export class EngineService implements OnDestroy {
      map:texture
     });
     this.cube = new THREE.Mesh(geometry, material);
-    this.cube.position.x = 10;
+    this.cube.position.x = 0;
     this.cube.position.y = 2;
      this.cube.position.z = 0;
      this.cube.receiveShadow = true;
@@ -287,8 +289,8 @@ export class EngineService implements OnDestroy {
     this.scene.add(plane);
 
     // helper for grid
-    //const gridHelper = new THREE.GridHelper(20);
-    //this.scene.add(gridHelper);
+    const gridHelper = new THREE.GridHelper(20);
+    this.scene.add(gridHelper);
 
     // sphere mesh
 
@@ -315,8 +317,8 @@ export class EngineService implements OnDestroy {
     this.sphere.position.set(-4, 2, 0); // Initial position
     this.sphere.castShadow = true;
     this.pivot.add(this.sphere); // Add the sphere to the pivot
-   this.scene.add(this.sphere);
-    //this.scene.add(this.pivot); // Add the pivot to the scene
+    //this.scene.add(this.sphere);
+    this.scene.add(this.pivot); // Add the pivot to the scene
     
 
     //added gui
@@ -372,7 +374,7 @@ export class EngineService implements OnDestroy {
     this.controls.maxDistance = 20;
     this.controls.target.set(0, 2, 2);
     this.controls.update();
-    //this.scene.add(this.pivot); // Add the pivot point to the scene
+    this.scene.add(this.pivot); // Add the pivot point to the scene
 
   }
    
@@ -551,8 +553,6 @@ export class EngineService implements OnDestroy {
     
       // Load the additional model (donkey.gltf)
 
-      let mixer: THREE.AnimationMixer; // Declare the mixer variable
-
       loader.load(
         'assets/Donkey.gltf', // Adjust the path to your additional .glb file
         (gltf) => {
@@ -561,14 +561,14 @@ export class EngineService implements OnDestroy {
           donkeyModel.position.set(0, 0, 3.5); // Adjust position as needed
           donkeyModel.scale.set(1, 1, 1); // Adjust scale as needed
 
-          mixer = new THREE.AnimationMixer(donkeyModel); // Initialize the mixer
+          this.mixer = new THREE.AnimationMixer(gltf.scene); // Initialize the mixer
           const clips = gltf.animations;
-          clips.forEach(function (clip) {
+          //clips.forEach(function (_clip) {
             //const clip = THREE.AnimationClip.findByName(clips, 'Eating');
-            const action = mixer.clipAction(clip);
-            action.play(); // Play each animation clip
+           // const action = mixer.clipAction(clip);
+            //action.play(); // Play each animation clip
             
-          });
+          //});
 
 
              // Enable shadow casting for each mesh in the donkey model
@@ -580,10 +580,15 @@ export class EngineService implements OnDestroy {
       });
 
       this.scene.add(donkeyModel);
-        
-      this.traverseMaterials(donkeyModel);
+      const clipEat = THREE.AnimationClip.findByName( clips, 'Attack_Headbutt');
+      console.log(clipEat);
+      this.mixer.clipAction(clipEat).play();
+      //this.traverseMaterials(donkeyModel);
     });
+    if (this.mixer) {
+      this.mixer.update(this.clock.getDelta());
   }
+}
 
  /*
     +-------------------------------------------------------------------------------------+                                                                                                     
@@ -607,7 +612,7 @@ export class EngineService implements OnDestroy {
         if (Array.isArray(material)) {
           material.forEach(mat => this.setupGui(mat));
         } else {
-          //this.setupGui(material);
+          this.setupGui(material);
         }
       }
     });
@@ -625,6 +630,7 @@ export class EngineService implements OnDestroy {
 
 
   setupGui(material: THREE.Material): void {
+    /*
     const gui = new dat.GUI();
     const materialFolder = gui.addFolder('Material Properties');
 
@@ -637,6 +643,7 @@ export class EngineService implements OnDestroy {
     materialFolder.add(material, 'wireframe');
 
     materialFolder.open();
+    */
   }
 }
 
