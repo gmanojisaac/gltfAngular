@@ -26,6 +26,7 @@ export class EngineService implements OnDestroy {
   private donkeyModel!: THREE.Group; // Store the donkey model
   private pivot: THREE.Object3D; // Pivot point for rotation
   private controls!: OrbitControls;
+  private mixer: THREE.AnimationMixer; // Declare the mixer variable
   private sphere: THREE.Mesh;
   private step = 0; // Step for sphere animation
   private options = {
@@ -35,6 +36,7 @@ export class EngineService implements OnDestroy {
     angle: 0.2,
     penumbra: 0,
     intensity: 1
+    
   };
   public constructor(private ngZone: NgZone) {
     this.pivot = new THREE.Object3D(); // Initialize the pivot point
@@ -133,14 +135,14 @@ export class EngineService implements OnDestroy {
   +-----------------------------------------------------------------+                                                                                                     
    |                                                                 |                                                                                                     
  
-   |    -use threejs.directionallight -> create directionallight           |                                                                                                     
+   |    -use threejs.directionallight -> create directionallight     |                                                                                                     
    |    -use directionallight -> pass color and intensity
    |    -set positions and enable castshadow true
    |    -add to scene
    |   optional (add a DirectionalLightHelper) for DirectionalLight
    |    - add to scene      
-        optional (add a CameraHelper) for DirectionalLight shadow 
-   |    - add to scene                                           |                                                                                                   
+   |optional (add a CameraHelper) for DirectionalLight shadow 
+   |    - add to scene                                                |                                                                                                   
    +---------^-------------------------------------------------------+     
    */
 
@@ -195,6 +197,14 @@ export class EngineService implements OnDestroy {
    const sLightHelper = new THREE.SpotLightHelper(spotlight);
    this.scene.add(sLightHelper);
 */
+
+      // fog
+    this.scene.fog = new THREE.Fog(0xFFFFFF, 0, 200);
+    this.scene.fog = new THREE.FogExp2(0xFFFFFF, 0.01);
+    this.renderer.setClearColor(0xffea00);
+
+
+
 
     // Cube mesh
     /*
@@ -420,6 +430,10 @@ export class EngineService implements OnDestroy {
           this.pivot.rotation.y += 0.01; // Rotate the pivot point
     
         }
+  // Update the animation mixer
+  if (this.mixer) {
+    this.mixer.update(0.01);
+  } 
 
        
 
@@ -520,6 +534,9 @@ export class EngineService implements OnDestroy {
       );
     
       // Load the additional model (donkey.gltf)
+
+      let mixer: THREE.AnimationMixer; // Declare the mixer variable
+
       loader.load(
         'assets/Donkey.gltf', // Adjust the path to your additional .glb file
         (gltf) => {
@@ -527,6 +544,15 @@ export class EngineService implements OnDestroy {
           // Position, scale, and add the model to the scene
           donkeyModel.position.set(0, 0, 3.5); // Adjust position as needed
           donkeyModel.scale.set(1, 1, 1); // Adjust scale as needed
+
+          mixer = new THREE.AnimationMixer(donkeyModel); // Initialize the mixer
+          const clips = gltf.animations;
+          clips.forEach(function (clip) {
+            //const clip = THREE.AnimationClip.findByName(clips, 'Eating');
+            const action = mixer.clipAction(clip);
+            action.play(); // Play each animation clip
+          });
+
 
              // Enable shadow casting for each mesh in the donkey model
             donkeyModel.traverse((node) => {
