@@ -93,8 +93,8 @@ export class EngineService implements OnDestroy {
     });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
      this.renderer.shadowMap.enabled = true; 
-     this.canvas.addEventListener('click', (event) => this.onMouseClick(event));
-
+     //this.canvas.addEventListener('click', (event) => this.onMouseClick(event));
+    
 
     // create the scene
     /*
@@ -269,47 +269,6 @@ export class EngineService implements OnDestroy {
      this.scene.add(this.cube); 
     
 
-
-     //this.raycaster = new THREE.Raycaster();
-     //this.mouse = new THREE.Vector2();
-    // const textureLoader = new THREE.TextureLoader();
-    // const decalTexture = textureLoader.load('path/to/decal-texture.png');
-    // Assuming 'hits' is defined and contains the raycasting results
-/*
-    
-updateDecals_() }
-if (!this.input_.current_.leftButton && this.input_.previous_.leftButton) {
-const raycaster = new THREE.Raycaster();
-const pos = { x:0, y:0};
-raycaster.setFromCamera(pos, this.camera_);
-const hits = raycaster.intersectObjects(this.sceneObjects_);
-if (!hits.length) {
-return;
-}
-const position = hits[0].point.clone();
-const eye = position.clone();
-eye.add(hits[0].face.normal);
-const rotation = new THREE.Matrix4();
-rotation.lookAt(eye,position, THREE.Object3D.DefaultUp);
-const euler = new THREE.Euler();
-euler.setFromRotationMatrix(rotation);
-
-      
-    const decalGeometry = new DecalGeometry(
-      hits[0].object, hits[0]. point, euler, new THREE.Vector3(1, 1, 1));
-      const decalMaterial = new THREE.MeshStandardMaterial({
-      color:0xFFFFFF,
-      depthTest: true,
-      depthWrite: false,
-      polygonOffset: true,
-      polygonOffsetFactor: -4,
-      });
-      const decal = new THREE.Mesh(decalGeometry, decalMaterial);
-      decal.receiveShadow = true;
-      this.scene.add(decal);
-*/
-
-
       // Plane mesh
 
         /*
@@ -428,7 +387,7 @@ euler.setFromRotationMatrix(rotation);
     this.controls.update();
     this.scene.add(this.pivot); // Add the pivot point to the scene
 
-  this.sceneObjects = [this.cube, plane, this.sphere];
+  this.sceneObjects = [this.donkeyModel, plane, this.sphere];
   this.canvas.addEventListener('click', (event) => this.onMouseClick(event));
 
   }
@@ -451,18 +410,20 @@ euler.setFromRotationMatrix(rotation);
       --> Add the decal to the scene
 +--------------------------------------------------------------------------------------------------------+
 */
-   
-  private onMouseClick(event: MouseEvent) {
-    event.preventDefault();
-  
-    this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-  
-    this.raycaster.setFromCamera(this.mouse, this.camera);
-    const intersects = this.raycaster.intersectObjects(this.scene.children, true);
-  
-    if (intersects.length > 0) {
-      const hit = intersects[0];
+private onMouseClick(event: MouseEvent) {
+  event.preventDefault();
+
+  this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+  this.raycaster.setFromCamera(this.mouse, this.camera);
+  const intersects = this.raycaster.intersectObjects(this.donkeyModel.children, true);
+
+  if (intersects.length > 0) {
+    const hit = intersects[0];
+
+    // Ensure the hit object is a Mesh
+    if ((hit.object as THREE.Mesh).isMesh) {
       const position = hit.point.clone();
       const eye = position.clone();
       eye.add(hit.face.normal);
@@ -470,12 +431,11 @@ euler.setFromRotationMatrix(rotation);
       rotation.lookAt(eye, position, THREE.Object3D.DEFAULT_UP);
       const euler = new THREE.Euler();
       euler.setFromRotationMatrix(rotation);
-  
+
       const decalGeometry = new DecalGeometry(
-        hit.object, position, euler, new THREE.Vector3(1, 1, 1)
+        hit.object as THREE.Mesh, position, euler, new THREE.Vector3(1, 1, 1)
       );
-      
-  
+
       const decalMaterial = new THREE.MeshStandardMaterial({
         color: 0xFFFFFF,
         depthTest: true,
@@ -483,19 +443,15 @@ euler.setFromRotationMatrix(rotation);
         polygonOffset: true,
         polygonOffsetFactor: -4,
       });
-  
+
       const decal = new THREE.Mesh(decalGeometry, decalMaterial);
       decal.receiveShadow = true;
       this.scene.add(decal);
     }
   }
-  
+}
 
 
-
-
-
-  
   public animate(): void {
     // We have to run this outside angular zones,
     // because it could trigger heavy changeDetection cycles.
@@ -1032,4 +988,30 @@ model.getObjectByName('Cube_6').material.color.setHex(e);
 +----------------------------------------------------------------------------------------------------------------+
 */
 
+/*
++------------------------------------------------------------------------------------------------------------------+
+ -->shader
+             -> Shaders in Three.js are small programs that run on the GPU to perform specific tasks, 
+                such as rendering 3D objects. 
+                They are written in the GLSL (OpenGL Shading Language) 
+                used to create custom materials and effects in Three.js. 
+                They can be used to modify the appearance of 3D objects, such as 
+                changing their color, texture, or lighting.
+          Vertex Shader ->
+                     The vertex shader is responsible for positioning each vertex of a geometry.
+                      It is run for every vertex and sets the gl_Position property, which contains the x, y, and z
+                       coordinates of the vertex on the screen.
+          Fragment Shader -> The fragment shader is responsible for determining the color of each pixel 
+                              in the rendered image.
+                          -> It is run for every pixel and sets the gl_FragColor property, which contains the
+                             color of the pixel.
+          Creating a Custom Shader -> To create a custom shader in Three.js, you need to define a vertex shader
+                                       and a fragment shader.
+                                  -> These shaders are then passed to the ShaderMaterial constructor to create a 
+                                      custom material.
+          Benefits of Shaders -> Shaders provide absolute control over how 3D objects are rendered.
+                              -> They allow developers to create complex and dynamic effects that are not possible 
+                                  with standard materials
 
++-------------------------------------------------------------------------------------------------------------------+
+*/
