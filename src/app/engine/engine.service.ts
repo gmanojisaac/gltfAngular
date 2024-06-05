@@ -3,6 +3,8 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
+import { DecalGeometry } from 'three/examples/jsm/geometries/DecalGeometry.js';
+
 //import * as dat from 'dat.gui';
 
     /*
@@ -28,6 +30,9 @@ export class EngineService implements OnDestroy {
   private controls!: OrbitControls;
   private mixer: THREE.AnimationMixer; // Declare the mixer variable
   private sphere: THREE.Mesh;
+  private raycaster = new THREE.Raycaster();
+  private mouse = new THREE.Vector2();
+  private sceneObjects: THREE.Object3D[] = [];
   clock = new THREE.Clock();  
   private step = 0; // Step for sphere animation
   private options = {
@@ -88,6 +93,8 @@ export class EngineService implements OnDestroy {
     });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
      this.renderer.shadowMap.enabled = true; 
+     this.canvas.addEventListener('click', (event) => this.onMouseClick(event));
+
 
     // create the scene
     /*
@@ -262,6 +269,47 @@ export class EngineService implements OnDestroy {
      this.scene.add(this.cube); 
     
 
+
+     //this.raycaster = new THREE.Raycaster();
+     //this.mouse = new THREE.Vector2();
+    // const textureLoader = new THREE.TextureLoader();
+    // const decalTexture = textureLoader.load('path/to/decal-texture.png');
+    // Assuming 'hits' is defined and contains the raycasting results
+/*
+    
+updateDecals_() }
+if (!this.input_.current_.leftButton && this.input_.previous_.leftButton) {
+const raycaster = new THREE.Raycaster();
+const pos = { x:0, y:0};
+raycaster.setFromCamera(pos, this.camera_);
+const hits = raycaster.intersectObjects(this.sceneObjects_);
+if (!hits.length) {
+return;
+}
+const position = hits[0].point.clone();
+const eye = position.clone();
+eye.add(hits[0].face.normal);
+const rotation = new THREE.Matrix4();
+rotation.lookAt(eye,position, THREE.Object3D.DefaultUp);
+const euler = new THREE.Euler();
+euler.setFromRotationMatrix(rotation);
+
+      
+    const decalGeometry = new DecalGeometry(
+      hits[0].object, hits[0]. point, euler, new THREE.Vector3(1, 1, 1));
+      const decalMaterial = new THREE.MeshStandardMaterial({
+      color:0xFFFFFF,
+      depthTest: true,
+      depthWrite: false,
+      polygonOffset: true,
+      polygonOffsetFactor: -4,
+      });
+      const decal = new THREE.Mesh(decalGeometry, decalMaterial);
+      decal.receiveShadow = true;
+      this.scene.add(decal);
+*/
+
+
       // Plane mesh
 
         /*
@@ -352,6 +400,10 @@ export class EngineService implements OnDestroy {
     gui.add(this.options, 'penumbra', 0, 1);
     gui.add(this.options, 'intensity', 0, 1);*/
 
+
+
+
+
     //Create Controls
 
     /*
@@ -376,8 +428,72 @@ export class EngineService implements OnDestroy {
     this.controls.update();
     this.scene.add(this.pivot); // Add the pivot point to the scene
 
+  this.sceneObjects = [this.cube, plane, this.sphere];
+  this.canvas.addEventListener('click', (event) => this.onMouseClick(event));
+
   }
+
+    // decalGeometry
+    /*
++-------------------------------------------------------------------------------------------------------+
+      --> Prevent the default mouse event behavior.
+      --> Convert mouse coordinates to normalized device coordinates.
+      --> Set the raycaster withrespect to camera and mouse position
+      --> Find intersections between the raycaster and scene objects
+      --> If there are intersections, proceed / Get the intersection point and clone it.
+      --> eye position by adding the normal to the position.
+      --> Create a rotation matrix to look at the hit point from the eye position.
+      --> Convert the rotation matrix to Euler angles
+      --> Create the decal geometry at the hit point with the calculated rotation.
+      --> Create the decal material with specified properties
+      --> Create the decal mesh with the geometry and material.
+      --> Set the decal to receive shadows.
+      --> Add the decal to the scene
++--------------------------------------------------------------------------------------------------------+
+*/
    
+  private onMouseClick(event: MouseEvent) {
+    event.preventDefault();
+  
+    this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+  
+    this.raycaster.setFromCamera(this.mouse, this.camera);
+    const intersects = this.raycaster.intersectObjects(this.scene.children, true);
+  
+    if (intersects.length > 0) {
+      const hit = intersects[0];
+      const position = hit.point.clone();
+      const eye = position.clone();
+      eye.add(hit.face.normal);
+      const rotation = new THREE.Matrix4();
+      rotation.lookAt(eye, position, THREE.Object3D.DEFAULT_UP);
+      const euler = new THREE.Euler();
+      euler.setFromRotationMatrix(rotation);
+  
+      const decalGeometry = new DecalGeometry(
+        hit.object, position, euler, new THREE.Vector3(1, 1, 1)
+      );
+      
+  
+      const decalMaterial = new THREE.MeshStandardMaterial({
+        color: 0xFFFFFF,
+        depthTest: true,
+        depthWrite: false,
+        polygonOffset: true,
+        polygonOffsetFactor: -4,
+      });
+  
+      const decal = new THREE.Mesh(decalGeometry, decalMaterial);
+      decal.receiveShadow = true;
+      this.scene.add(decal);
+    }
+  }
+  
+
+
+
+
 
   
   public animate(): void {
@@ -891,3 +1007,29 @@ model.getObjectByName('Cube_6').material.color.setHex(e);
 +---------------+
 
 */
+          //DecalGeometry
+          
+/*
++---------------------------------------------------------------------------------------------------------------+
+--> decalgeometry
+              -> DecalGeometry class in Three.js is used to create decals for 3D objects
+              -> It is commonly used in games and simulations to enhance the appearance of 3D models.
+              -> Decals are small images or textures that are applied to specific parts of a 3D model to 
+                 enhance its appearance
+              Constructor --> The DecalGeometry constructor takes several parameters, including the mesh to 
+                              intersect,the position, direction, and dimensions of the decal, and the check 
+                              value for clipping.
+                          --> The mesh must be a THREE.Mesh object.
+              Material --> The DecalGeometry class requires a material to be applied to the decal.
+                      --> The material can be any material, but it must have the necessary attributes enabled 
+                          for decals.
+              Limitations --> The DecalGeometry class has some limitations, such as the need for a THREE.Mesh 
+                                object and the requirement for a material.
+                            --> It also has some performance limitations, such as the need for a large number of 
+                                vertices and the complexity of the decal geometry.
+              Workarounds --> To overcome the limitations of DecalGeometry, you can use other techniques, such as
+                             using a different geometry library or creating a custom decal system.
++----------------------------------------------------------------------------------------------------------------+
+*/
+
+
