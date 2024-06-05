@@ -1011,7 +1011,7 @@ model.getObjectByName('Cube_6').material.color.setHex(e);
                                       custom material.
           Benefits of Shaders -> Shaders provide absolute control over how 3D objects are rendered.
                               -> They allow developers to create complex and dynamic effects that are not possible 
-                                  with standard materials
+                                  with standard materials.
 
 +-------------------------------------------------------------------------------------------------------------------+
 */
