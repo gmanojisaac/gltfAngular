@@ -292,7 +292,7 @@ export class EngineService implements OnDestroy {
 +---------^-----------------------------------------------------------+     
 */
 
-    /*const sphereGeometry = new THREE.SphereGeometry(2);
+    const sphereGeometry = new THREE.SphereGeometry(2);
     //const sphereMaterial = new THREE.MeshBasicMaterial({color: 0xFFFFFF, wireframe: false});
     const sphereMaterial = new THREE.MeshStandardMaterial({
       color: 0xff0000, // Red color for the example
@@ -327,8 +327,8 @@ export class EngineService implements OnDestroy {
           `vec3 transformed = vec3(position.x + sin(time), position.y, position.z);`
         );
       }
-    } as any);*/
-/*
+    } as any);
+
     //const sphereMaterial = new THREE.MeshLambertMaterial({color: 0x0000FF, wireframe: false});
     //const sphereMaterial = new THREE.MeshStandardMaterial({color: 'red'});
     this.sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
@@ -338,49 +338,49 @@ export class EngineService implements OnDestroy {
     //this.scene.add(this.sphere);
     this.scene.add(this.pivot); // Add the pivot to the scene
 
-*/
-const sphereGeometry = new THREE.SphereGeometry(2);
 
-const sphereMaterial = new THREE.MeshStandardMaterial({
-
+const icosahedronGeometry = new THREE.IcosahedronGeometry(2);
+const icosahedronMaterial = new THREE.MeshStandardMaterial({
   color: 0xff0000, // Red color for the example
+});
 
-  onBeforeCompile: function (shader) {
-    // Example modification: Inject custom GLSL code in the vertex shader
-    const customVertexCode = `
-      // GLSL code here
-      float time = 0.0;
-      `;
+// Assign the onBeforeCompile function to the material
+icosahedronMaterial.onBeforeCompile = (shader) => {
+  // Example modification: Inject custom GLSL code in the vertex shader
+  const customVertexCode = `
+    // GLSL code here
+    uniform float time;
+  `;
 
-    const customShaderCode = `
-        #include <color_fragment>
-          diffuseColor = vec4(1, 1, 0, 1);
-      `;
+  const customFragmentCode = `
+    #include <color_fragment>
+    diffuseColor = vec4(1, 1, 0, 1); // Change color to yellow
+  `;
 
-    shader.fragmentShader = shader.fragmentShader.replace(
-      `#include <color_fragment>`,
-      `#include <color_fragment>
-            diffuseColor = vec4(1, 1, 0, 1);
-      `
-    );
+  shader.fragmentShader = shader.fragmentShader.replace(
+    `#include <color_fragment>`,
+    customFragmentCode
+  );
 
-    console.log(shader.fragmentShader); // Inspect the original shader code
-    // Inject the custom code right before the 'void main()' function
-    shader.vertexShader = customVertexCode + shader.vertexShader;
+  console.log(shader.fragmentShader); // Inspect the modified shader code
 
-    // Modify the vertex shader main() to include some transformation
-    shader.vertexShader = shader.vertexShader.replace(
-      `#include <begin_vertex>`,
-      `vec3 transformed = vec3(position.x + sin(time), position.y, position.z);`
-    );
-  }
-} as any);
-this.sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-this.sphere.position.set(-4, 2, 0); // Initial position
-this.sphere.castShadow = true;
-this.pivot.add(this.sphere); // Add the Icosahedron to the pivot
-//this.scene.add(this.sphere);
-this.scene.add(this.pivot);
+  // Inject the custom code at the beginning of the vertex shader
+  shader.vertexShader = customVertexCode + shader.vertexShader;
+
+  // Modify the vertex shader main() to include some transformation
+  shader.vertexShader = shader.vertexShader.replace(
+    `#include <begin_vertex>`,
+    `vec3 transformed = vec3(position.x + sin(time), position.y, position.z);`
+  );
+};
+
+
+this.icosahedron = new THREE.Mesh(icosahedronGeometry, icosahedronMaterial);
+this.icosahedron.position.set(-8, 1, 0); // Initial position
+this.icosahedron.castShadow = true;
+this.pivot.add(this.icosahedron); // Add the Icosahedron to the pivot
+this.scene.add(this.pivot); // Add the pivot to the scene
+
 
     //added gui
 
@@ -498,6 +498,9 @@ this.scene.add(this.pivot);
     this.step += this.options.speed;
     // Apply a sine wave function to the sphere's Y position
     this.sphere.position.y = 2 + Math.abs(Math.sin(this.step) * 2);
+
+
+
     /*
       
             // Rotate the model if it is loaded
