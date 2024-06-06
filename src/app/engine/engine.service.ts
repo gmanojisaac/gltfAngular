@@ -29,8 +29,10 @@ export class EngineService implements OnDestroy {
   private mixer: THREE.AnimationMixer; // Declare the mixer variable
   private sphere: THREE.Mesh;
   private icosahedron: THREE.Mesh;
+  private icoMaterial: THREE.MeshStandardMaterial;
   private step = 0; // Step for sphere animation
-  clock = new THREE.Clock();
+  private clock = new THREE.Clock();
+  private ico: THREE.Mesh;
   private options = {
     sphereColor: '#ffea00',
     wireframe: false,
@@ -40,6 +42,7 @@ export class EngineService implements OnDestroy {
     intensity: 1
 
   };
+  icoMesh: any;
   public constructor(private ngZone: NgZone) {
     this.pivot = new THREE.Object3D(); // Initialize the pivot point
   }
@@ -338,50 +341,56 @@ export class EngineService implements OnDestroy {
     //this.scene.add(this.sphere);
     this.scene.add(this.pivot); // Add the pivot to the scene
 
+   
 
-const icosahedronGeometry = new THREE.IcosahedronGeometry(2);
-const icosahedronMaterial = new THREE.MeshStandardMaterial({
-  color: 0xff0000, // Red color for the example
-});
+        // Initialize Icosahedron geometry and material
+        const icoGeometry = new THREE.IcosahedronGeometry();
 
-// Assign the onBeforeCompile function to the material
-icosahedronMaterial.onBeforeCompile = (shader) => {
-  // Example modification: Inject custom GLSL code in the vertex shader
-  const customVertexCode = `
-    // GLSL code here
-    uniform float time;
-  `;
+        // Create and modify the shader using onBeforeCompile
+        this.icoMaterial = new THREE.MeshStandardMaterial();
+        this.icoMaterial.onBeforeCompile = (shader) => {
+          shader.uniforms['uTime'] = { value: 0 }; // Declare a uniform for time
+    
+          shader.fragmentShader = shader.fragmentShader.replace(
+            '#include <color_pars_fragment>',
+            `
+            #include <color_pars_fragment>
+            uniform float uTime;
+            `
+          );
+    
+          shader.fragmentShader = shader.fragmentShader.replace(
+            '#include <color_fragment>',
+            `
+            #include <color_fragment>
+            float greenValue;
+            #ifdef NO_ANIMATION
+              greenValue = 0.0;
+            #else
+              greenValue = sin(uTime);
+            #endif
+            diffuseColor = vec4(1.0, greenValue, 0.0, 1.0);
+            `
+          );
+    
+          // Store the reference to the shader uniforms in userData for later access
+          this.icoMaterial.userData.shaderUniforms = shader.uniforms;
+        };
+    
+        const ico = new THREE.Mesh(icoGeometry, this.icoMaterial);
+        ico.position.set(2, 3, 1); // Set the position of the Icosahedron
+       // this.scene.add(ico);
+        this.ico = ico;
+        this.pivot.add(this.ico); // Add the sphere to the pivot
+    //this.scene.add(this.sphere);
+    this.scene.add(this.pivot);
+    
+        // Optionally, you can define a define for animation control
+        this.icoMaterial.defines = { NO_ANIMATION: false };
+    
+        
 
-  const customFragmentCode = `
-    #include <color_fragment>
-    diffuseColor = vec4(1, 1, 0, 1); // Change color to yellow
-  `;
-
-  shader.fragmentShader = shader.fragmentShader.replace(
-    `#include <color_fragment>`,
-    customFragmentCode
-  );
-
-  console.log(shader.fragmentShader); // Inspect the modified shader code
-
-  // Inject the custom code at the beginning of the vertex shader
-  shader.vertexShader = customVertexCode + shader.vertexShader;
-
-  // Modify the vertex shader main() to include some transformation
-  shader.vertexShader = shader.vertexShader.replace(
-    `#include <begin_vertex>`,
-    `vec3 transformed = vec3(position.x + sin(time), position.y, position.z);`
-  );
-};
-
-
-this.icosahedron = new THREE.Mesh(icosahedronGeometry, icosahedronMaterial);
-this.icosahedron.position.set(-8, 1, 0); // Initial position
-this.icosahedron.castShadow = true;
-this.pivot.add(this.icosahedron); // Add the Icosahedron to the pivot
-this.scene.add(this.pivot); // Add the pivot to the scene
-
-
+    
     //added gui
 
     /*
@@ -420,7 +429,7 @@ this.scene.add(this.pivot); // Add the pivot to the scene
     +-----------------------------------------------------------------------+                                                                                                     
     |                                                                       |                                                                                                     
     | Create Orbit controls                                                 |
-    |     - uses OrbitControls → creates a basic mouse control              |
+    |     - uses OrbitControls → creates a basic mouse control              | 
     |     - Pass previously created camera and domElement from renderer     |   
     |     - use minDistance / maxDistance  → pass values                    |
     |     - use target.set → pass values for the focus point of the controls|
@@ -494,13 +503,19 @@ this.scene.add(this.pivot); // Add the pivot to the scene
     this.cube.rotation.x += 0.01;
     this.cube.rotation.y += 0.01;
 
-    // Update the step value for the sphere animation
-    this.step += this.options.speed;
-    // Apply a sine wave function to the sphere's Y position
-    this.sphere.position.y = 2 + Math.abs(Math.sin(this.step) * 2);
+     // Update the uTime uniform in the material's shader
+     const delta = this.clock.getDelta();
+     if (this.icoMaterial.userData.shaderUniforms) {
+       this.icoMaterial.userData.shaderUniforms.uTime.value += delta;
+     }
+ 
+     // Rotate the Icosahedron
+     this.ico.rotation.x += 0.01;
+     this.ico.rotation.y += 0.01;
+ 
 
-
-
+  
+    
     /*
       
             // Rotate the model if it is loaded
