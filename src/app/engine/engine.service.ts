@@ -320,6 +320,43 @@ export class EngineService implements OnDestroy {
     const sphereMaterial = new THREE.MeshStandardMaterial({color: 0x0000FF, wireframe: false});
     //const sphereMaterial = new THREE.MeshLambertMaterial({color: 0x0000FF, wireframe: false});
     
+      //onBeforeCompile: (shader) => {
+        material.onBeforeCompile = (shader) => {
+      // Example modification: Inject custom GLSL code in the vertex shader
+      const customVertexCode = `
+      // GLSL code here
+      float time = 0.0;
+      //uniform float time;
+      `;
+      
+
+      const customShaderCode = `
+        #include <color_fragment>
+          diffuseColor = vec4(1, 1, 0, 1);
+      `;
+
+      shader.fragmentShader = shader.fragmentShader.replace(
+        `#include <color_fragment>`,
+        `#include <color_fragment>
+            diffuseColor = vec4(1, 1, 0, 1);
+      `
+    );
+
+    console.log(shader.fragmentShader); // Inspect the original shader code
+      // Inject the custom code right before the 'void main()' function
+      shader.vertexShader = customVertexCode + shader.vertexShader;
+
+      // Modify the vertex shader main() to include some transformation
+      shader.vertexShader = shader.vertexShader.replace(
+          `#include <begin_vertex>`,
+          `#include <begin_vertex>
+          vec3 transformed = vec3(position.x + sin(time), position.y, position.z);`
+      );
+  }
+//} as any);
+
+
+
     this.sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
     this.sphere.position.set(-4, 2, 0); // Initial position
     this.sphere.castShadow = true;
