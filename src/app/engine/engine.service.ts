@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
-import * as dat from 'dat.gui';
+//import * as dat from 'dat.gui';
 
     /*
     +-------------------+                                                                                                     
@@ -29,6 +29,7 @@ export class EngineService implements OnDestroy {
   private mixer: THREE.AnimationMixer; // Declare the mixer variable
   private sphere: THREE.Mesh;
   private step = 0; // Step for sphere animation
+  clock = new THREE.Clock();      
   private options = {
     sphereColor: '#ffea00',
     wireframe: false,
@@ -292,7 +293,40 @@ export class EngineService implements OnDestroy {
 
     const sphereGeometry = new THREE.SphereGeometry(2);
     //const sphereMaterial = new THREE.MeshBasicMaterial({color: 0xFFFFFF, wireframe: false});
-    const sphereMaterial = new THREE.MeshStandardMaterial({color: 0x0000FF, wireframe: false});
+    const sphereMaterial = new THREE.MeshStandardMaterial({
+      color: 0xff0000, // Red color for the example
+      onBeforeCompile: function (shader) {
+
+  
+          // Example modification: Inject custom GLSL code in the vertex shader
+          const customVertexCode = `
+          // GLSL code here
+          float time = 0.0;
+          `;
+  
+          const customShaderCode = `
+            #include <color_fragment>
+              diffuseColor = vec4(1, 1, 0, 1);
+          `;
+
+          shader.fragmentShader = shader.fragmentShader.replace(
+            `#include <color_fragment>`,
+            `#include <color_fragment>
+                diffuseColor = vec4(1, 1, 0, 1);
+          `
+        );
+
+        console.log(shader.fragmentShader); // Inspect the original shader code
+          // Inject the custom code right before the 'void main()' function
+          shader.vertexShader = customVertexCode + shader.vertexShader;
+  
+          // Modify the vertex shader main() to include some transformation
+          shader.vertexShader = shader.vertexShader.replace(
+              `#include <begin_vertex>`,
+              `vec3 transformed = vec3(position.x + sin(time), position.y, position.z);`
+          );
+      }
+  } as any);
     //const sphereMaterial = new THREE.MeshLambertMaterial({color: 0x0000FF, wireframe: false});
     
     this.sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
@@ -321,6 +355,7 @@ export class EngineService implements OnDestroy {
     +---------^-----------------------------------------------------------+     
     */
 
+    /*
     const gui = new dat.GUI();
    
     gui.addColor(this.options, 'sphereColor').onChange((e) => {
@@ -332,7 +367,7 @@ export class EngineService implements OnDestroy {
     gui.add(this.options, 'speed', 0, 0.1);
     gui.add(this.options, 'angle', 0, 1);
     gui.add(this.options, 'penumbra', 0, 1);
-    gui.add(this.options, 'intensity', 0, 1);
+    gui.add(this.options, 'intensity', 0, 1);*/
 
     //Create Controls
 
@@ -353,7 +388,7 @@ export class EngineService implements OnDestroy {
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.minDistance = 5;
-    this.controls.maxDistance = 10;
+    this.controls.maxDistance = 25;
     this.controls.target.set(0, 2, 2);
     this.controls.update();
     this.scene.add(this.pivot); // Add the pivot point to the scene
@@ -535,7 +570,7 @@ export class EngineService implements OnDestroy {
     
       // Load the additional model (donkey.gltf)
 
-      let mixer: THREE.AnimationMixer; // Declare the mixer variable
+  
 
       loader.load(
         'assets/Donkey.gltf', // Adjust the path to your additional .glb file
@@ -545,13 +580,13 @@ export class EngineService implements OnDestroy {
           donkeyModel.position.set(0, 0, 3.5); // Adjust position as needed
           donkeyModel.scale.set(1, 1, 1); // Adjust scale as needed
 
-          mixer = new THREE.AnimationMixer(donkeyModel); // Initialize the mixer
+          this.mixer = new THREE.AnimationMixer(gltf.scene); // Initialize the mixer
           const clips = gltf.animations;
-          clips.forEach(function (clip) {
-            //const clip = THREE.AnimationClip.findByName(clips, 'Eating');
-            const action = mixer.clipAction(clip);
-            action.play(); // Play each animation clip
-          });
+          
+          //clips.forEach(function (_clips) {
+
+            //action.play(); // Play each animation clip
+          //});
 
 
              // Enable shadow casting for each mesh in the donkey model
@@ -562,10 +597,18 @@ export class EngineService implements OnDestroy {
         }
       });
 
+
       this.scene.add(donkeyModel);
         
-      this.traverseMaterials(donkeyModel);
+      const clipEat = THREE.AnimationClip.findByName( clips, 'Attack_Headbutt');
+      console.log(clipEat);
+      this.mixer.clipAction(clipEat).play();
+      //this.traverseMaterials(donkeyModel);
+
     });
+    if (this.mixer) {
+      this.mixer.update(this.clock.getDelta());
+    }
   }
 
  /*
@@ -608,7 +651,7 @@ export class EngineService implements OnDestroy {
 
 
   setupGui(material: THREE.Material): void {
-    const gui = new dat.GUI();
+    /*const gui = new dat.GUI();
     const materialFolder = gui.addFolder('Material Properties');
 
     if ((material as THREE.MeshBasicMaterial).color) {
@@ -619,6 +662,6 @@ export class EngineService implements OnDestroy {
 
     materialFolder.add(material, 'wireframe');
 
-    materialFolder.open();
+    materialFolder.open();*/
   }
 }
