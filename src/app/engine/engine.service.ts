@@ -5,13 +5,13 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
 //import * as dat from 'dat.gui';
 
-    /*
-    +-------------------+                                                                                                     
-    |                   |                                                                                                     
-    |  EngineService    |                                                                                                     
-    |                   |                                                                                                     
-    +---------^---------+     
-    */
+/*
++-------------------+                                                                                                     
+|                   |                                                                                                     
+|  EngineService    |                                                                                                     
+|                   |                                                                                                     
++---------^---------+     
+*/
 
 @Injectable({ providedIn: 'root' })
 export class EngineService implements OnDestroy {
@@ -29,7 +29,7 @@ export class EngineService implements OnDestroy {
   private mixer: THREE.AnimationMixer; // Declare the mixer variable
   private sphere: THREE.Mesh;
   private step = 0; // Step for sphere animation
-  clock = new THREE.Clock();      
+  clock = new THREE.Clock();
   private options = {
     sphereColor: '#ffea00',
     wireframe: false,
@@ -37,22 +37,22 @@ export class EngineService implements OnDestroy {
     angle: 0.2,
     penumbra: 0,
     intensity: 1
-    
+
   };
   public constructor(private ngZone: NgZone) {
     this.pivot = new THREE.Object3D(); // Initialize the pivot point
   }
 
-  
-    /*
-    +-----------------------------------------------------------------------------+                                                                                                     
-    |                                                                             |                                                                                                     
-    |   ngOnDestroy- TBD                                                          |
-    |     -checks if frameId is not null,if null it cancels  animationframe
-    |     -checks if the renderer is not null,if null it cleans up the renderer 
-    |      -sets the canvas to null                                                                                                                    
-    +---------^--------------------------------------------------------------------+     
-    */
+
+  /*
+  +-----------------------------------------------------------------------------+                                                                                                     
+  |                                                                             |                                                                                                     
+  |   ngOnDestroy- TBD                                                          |
+  |     -checks if frameId is not null,if null it cancels  animationframe
+  |     -checks if the renderer is not null,if null it cleans up the renderer 
+  |      -sets the canvas to null                                                                                                                    
+  +---------^--------------------------------------------------------------------+     
+  */
 
   public ngOnDestroy(): void {
     if (this.frameId != null) {
@@ -86,7 +86,7 @@ export class EngineService implements OnDestroy {
       antialias: true // smooth edges
     });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
-     this.renderer.shadowMap.enabled = true; 
+    this.renderer.shadowMap.enabled = true;
 
     // create the scene
     /*
@@ -101,7 +101,7 @@ export class EngineService implements OnDestroy {
     +---------^-------------------------------------------------------+     
     */
     this.scene = new THREE.Scene();
-    
+
     this.camera = new THREE.PerspectiveCamera(
       75, window.innerWidth / window.innerHeight, 0.01, 100
     );
@@ -109,97 +109,97 @@ export class EngineService implements OnDestroy {
     //this.scene.add(this.camera);
     this.camera.position.set(4, 0, 4);
 
-  
+
     //  added axesHelper
     const axesHelper = new THREE.AxesHelper(5);
     this.scene.add(axesHelper);
 
-  /*  
-// ambient light
-+-----------------------------------------------------------------+                                                                                                     
-|                                                                 |                                                                                                     
+    /*  
+  // ambient light
+  +-----------------------------------------------------------------+                                                                                                     
+  |                                                                 |                                                                                                     
+  
+  |    -use threejs.AmbientLight -> create AmbientLight                                                                                                              
+  |    -use AmbientLight -> pass color 
+  |    - add to scene                                                                                                                                             
+  +---------^-------------------------------------------------------+     
+  */
 
-|    -use threejs.AmbientLight -> create AmbientLight                                                                                                              
-|    -use AmbientLight -> pass color 
-|    - add to scene                                                                                                                                             
-+---------^-------------------------------------------------------+     
-*/
 
-
-//(Ambient light)
+    //(Ambient light)
     const ambientLight = new THREE.AmbientLight(0x333333);
     this.scene.add(ambientLight);
 
 
-/*
-  // directional light
-  +-----------------------------------------------------------------+                                                                                                     
-   |                                                                 |                                                                                                     
- 
-   |    -use threejs.directionallight -> create directionallight     |                                                                                                     
-   |    -use directionallight -> pass color and intensity
-   |    -set positions and enable castshadow true
-   |    -add to scene
-   |   optional (add a DirectionalLightHelper) for DirectionalLight
-   |    - add to scene      
-   |optional (add a CameraHelper) for DirectionalLight shadow 
-   |    - add to scene                                                |                                                                                                   
-   +---------^-------------------------------------------------------+     
-   */
-
-
-   
-   // (directional light)
-      const directionalLight = new THREE.DirectionalLight(0xFFFFFF, 0.8);
-       this.scene.add(directionalLight);
-      directionalLight.position.set(-30, 50, 0)
-      directionalLight.castShadow = true;
-      directionalLight.shadow.camera.bottom = -12
+    /*
+      // directional light
+      +-----------------------------------------------------------------+                                                                                                     
+       |                                                                 |                                                                                                     
      
-      
-   //helper for directional light
-   
-      const dLightHelper = new THREE.DirectionalLightHelper(directionalLight, 5);
-       this.scene.add(dLightHelper);
+       |    -use threejs.directionallight -> create directionallight     |                                                                                                     
+       |    -use directionallight -> pass color and intensity
+       |    -set positions and enable castshadow true
+       |    -add to scene
+       |   optional (add a DirectionalLightHelper) for DirectionalLight
+       |    - add to scene      
+       |optional (add a CameraHelper) for DirectionalLight shadow 
+       |    - add to scene                                                |                                                                                                   
+       +---------^-------------------------------------------------------+     
+       */
 
-       const dLightShadowHelper = new THREE.CameraHelper(directionalLight.shadow.camera);
-       this.scene.add(dLightShadowHelper);
-   
+
+
+    // (directional light)
+    const directionalLight = new THREE.DirectionalLight(0xFFFFFF, 0.8);
+    this.scene.add(directionalLight);
+    directionalLight.position.set(-30, 50, 0)
+    directionalLight.castShadow = true;
+    directionalLight.shadow.camera.bottom = -12
+
+
+    //helper for directional light
+
+    const dLightHelper = new THREE.DirectionalLightHelper(directionalLight, 5);
+    this.scene.add(dLightHelper);
+
+    const dLightShadowHelper = new THREE.CameraHelper(directionalLight.shadow.camera);
+    this.scene.add(dLightShadowHelper);
 
 
 
-      // SpotLight
 
-      /*
-   +-----------------------------------------------------------------+                                                                                                     
-   |                                                                 |                                                                                                     
+    // SpotLight
 
-   |    -use threejs.SpotLight -> create spotlight 
-        -add to scene          |                                                                                                     
+    /*
+ +-----------------------------------------------------------------+                                                                                                     
+ |                                                                 |                                                                                                     
 
-   |    -set positions and enable castshadow true
-        - set angle
-   |    -add to scene
-   |   optional - use threejs.SpotLighthelper -> create spotlighthelper) for spotlight
-   | 
-   |    - add to scene                                                                                                                                                 
-   +---------^-------------------------------------------------------+     
-   */
+ |    -use threejs.SpotLight -> create spotlight 
+      -add to scene          |                                                                                                     
 
-   /*
-   const spotlight = new THREE.SpotLight(0xFFFFFF);
-   this.scene.add(spotlight);
-   spotlight.position.set(-100, 100, 0);
-   spotlight.castShadow = true;
-   spotlight.angle = 0.2;
+ |    -set positions and enable castshadow true
+      - set angle
+ |    -add to scene
+ |   optional - use threejs.SpotLighthelper -> create spotlighthelper) for spotlight
+ | 
+ |    - add to scene                                                                                                                                                 
+ +---------^-------------------------------------------------------+     
+ */
 
-   // Helper for spot light
+    /*
+    const spotlight = new THREE.SpotLight(0xFFFFFF);
+    this.scene.add(spotlight);
+    spotlight.position.set(-100, 100, 0);
+    spotlight.castShadow = true;
+    spotlight.angle = 0.2;
+ 
+    // Helper for spot light
+ 
+    const sLightHelper = new THREE.SpotLightHelper(spotlight);
+    this.scene.add(sLightHelper);
+ */
 
-   const sLightHelper = new THREE.SpotLightHelper(spotlight);
-   this.scene.add(sLightHelper);
-*/
-
-      // fog
+    // fog
     this.scene.fog = new THREE.Fog(0xFFFFFF, 0, 200);
     this.scene.fog = new THREE.FogExp2(0xFFFFFF, 0.01);
     this.renderer.setClearColor(0xffea00);
@@ -226,42 +226,42 @@ export class EngineService implements OnDestroy {
     +---------^---------------------------------------------------------------------------------------+     
     */
 
-     // Load the texture and apply it to the cube
-     const textureLoader = new THREE.TextureLoader();
-     const texture = textureLoader.load('assets/pexels.jpg'); // Replace with your JPG image path
-     const cubeMaterial = new THREE.MeshStandardMaterial({ map: texture });
+    // Load the texture and apply it to the cube
+    const textureLoader = new THREE.TextureLoader();
+    const texture = textureLoader.load('assets/pexels.jpg'); // Replace with your JPG image path
+    const cubeMaterial = new THREE.MeshStandardMaterial({ map: texture });
     const geometry = new THREE.BoxGeometry(2, 2, 2);
     //const material = new THREE.MeshBasicMaterial({color: 0x00ff00});
     const material = new THREE.MeshStandardMaterial({
       //color: 0x00ff00
-     map:texture
+      map: texture
     });
     this.cube = new THREE.Mesh(geometry, material);
     this.cube.position.x = 0;
     this.cube.position.y = 2;
-     this.cube.position.z = 0;
-     this.cube.receiveShadow = true;
-     this.cube.castShadow = true;
-     this.scene.add(this.cube); 
-    
+    this.cube.position.z = 0;
+    this.cube.receiveShadow = true;
+    this.cube.castShadow = true;
+    this.scene.add(this.cube);
 
-      // Plane mesh
 
-        /*
-    +---------------------------------------------------------------------+                                                                                                     
-    |                                                                     |                                                                                                     
-    | Create plane Mesh                                                    |
-    |     - uses planeGeometry → creates a plane with 20 , 20 dimensions |
-    |     - use MeshBasicMaterial → pass Material Color  .double side view |   
-    |     - use THREE.Mesh → pass geometry and material to create a mesh 
-    |     - set position of plane
-          - set rotation of plane 
-          - set recieve shadow to be true 
-          -added a grid helper
-    |      → add to scene                                                 |                                                                                                     
-    |                                                                     |                                                                                                     
-    +---------^-----------------------------------------------------------+     
-    */
+    // Plane mesh
+
+    /*
++---------------------------------------------------------------------+                                                                                                     
+|                                                                     |                                                                                                     
+| Create plane Mesh                                                    |
+|     - uses planeGeometry → creates a plane with 20 , 20 dimensions |
+|     - use MeshBasicMaterial → pass Material Color  .double side view |   
+|     - use THREE.Mesh → pass geometry and material to create a mesh 
+|     - set position of plane
+      - set rotation of plane 
+      - set recieve shadow to be true 
+      -added a grid helper
+|      → add to scene                                                 |                                                                                                     
+|                                                                     |                                                                                                     
++---------^-----------------------------------------------------------+     
+*/
     const planeGeometry = new THREE.PlaneGeometry(20, 20, 20, 20);
     //const planeMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFFF, side: THREE.DoubleSide });
     const planeMaterial = new THREE.MeshStandardMaterial({ color: 0xFFFFFF, side: THREE.DoubleSide });
@@ -277,19 +277,19 @@ export class EngineService implements OnDestroy {
 
     // sphere mesh
 
-         /*
-    +---------------------------------------------------------------------+                                                                                                     
-    |                                                                     |                                                                                                     
-    | Create sphere Mesh                                                  |
-    |     - uses sphereGeometry → creates a sphere with  dimensions       |
-    |     - use MeshBasicMaterial → pass Material Color  ,  wireframe     |   
-    |     - use THREE.Mesh → pass geometry and material to create a mesh 
-    |     - set position of sphere
-    |      → add to scene 
-    |      -> add pivot points                                                |                                                                                                     
-    |                                                                     |                                                                                                     
-    +---------^-----------------------------------------------------------+     
-    */
+    /*
++---------------------------------------------------------------------+                                                                                                     
+|                                                                     |                                                                                                     
+| Create sphere Mesh                                                  |
+|     - uses sphereGeometry → creates a sphere with  dimensions       |
+|     - use MeshBasicMaterial → pass Material Color  ,  wireframe     |   
+|     - use THREE.Mesh → pass geometry and material to create a mesh 
+|     - set position of sphere
+|      → add to scene 
+|      -> add pivot points                                                |                                                                                                     
+|                                                                     |                                                                                                     
++---------^-----------------------------------------------------------+     
+*/
 
     const sphereGeometry = new THREE.SphereGeometry(2);
     //const sphereMaterial = new THREE.MeshBasicMaterial({color: 0xFFFFFF, wireframe: false});
@@ -297,63 +297,63 @@ export class EngineService implements OnDestroy {
       color: 0xff0000, // Red color for the example
       onBeforeCompile: function (shader) {
 
-  
-          // Example modification: Inject custom GLSL code in the vertex shader
-          const customVertexCode = `
+
+        // Example modification: Inject custom GLSL code in the vertex shader
+        const customVertexCode = `
           // GLSL code here
           float time = 0.0;
           `;
-  
-          const customShaderCode = `
+
+        const customShaderCode = `
             #include <color_fragment>
               diffuseColor = vec4(1, 1, 0, 1);
           `;
 
-          shader.fragmentShader = shader.fragmentShader.replace(
-            `#include <color_fragment>`,
-            `#include <color_fragment>
+        shader.fragmentShader = shader.fragmentShader.replace(
+          `#include <color_fragment>`,
+          `#include <color_fragment>
                 diffuseColor = vec4(1, 1, 0, 1);
           `
         );
 
         console.log(shader.fragmentShader); // Inspect the original shader code
-          // Inject the custom code right before the 'void main()' function
-          shader.vertexShader = customVertexCode + shader.vertexShader;
-  
-          // Modify the vertex shader main() to include some transformation
-          shader.vertexShader = shader.vertexShader.replace(
-              `#include <begin_vertex>`,
-              `vec3 transformed = vec3(position.x + sin(time), position.y, position.z);`
-          );
+        // Inject the custom code right before the 'void main()' function
+        shader.vertexShader = customVertexCode + shader.vertexShader;
+
+        // Modify the vertex shader main() to include some transformation
+        shader.vertexShader = shader.vertexShader.replace(
+          `#include <begin_vertex>`,
+          `vec3 transformed = vec3(position.x + sin(time), position.y, position.z);`
+        );
       }
-  } as any);
+    } as any);
     //const sphereMaterial = new THREE.MeshLambertMaterial({color: 0x0000FF, wireframe: false});
-    
+
     this.sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
     this.sphere.position.set(-4, 2, 0); // Initial position
     this.sphere.castShadow = true;
     this.pivot.add(this.sphere); // Add the sphere to the pivot
-   //this.scene.add(this.sphere);
+    //this.scene.add(this.sphere);
     this.scene.add(this.pivot); // Add the pivot to the scene
-    
+
 
     //added gui
 
-           /*
-    +---------------------------------------------------------------------+                                                                                                     
-    |                                                                     |                                                                                                     
-    | installed dat.gui  ( using command npm install dat.gui)                                                
-    |     - A GUI is added to allow real-time color changes of a sphere's
-            material via a color picker.
-            -use THREE.js MeshBasicMaterial → pass Material Color     
-    |     - wireframe(-use THREE.js MeshBasicMaterial → pass wireframe )    
-          -speed
-          -angle
-          -penumbra
-          -intensity                                                                                                                                            
-    |                                                                     |                                                                                                     
-    +---------^-----------------------------------------------------------+     
-    */
+    /*
++---------------------------------------------------------------------+                                                                                                     
+|                                                                     |                                                                                                     
+| installed dat.gui  ( using command npm install dat.gui)                                                
+|     - A GUI is added to allow real-time color changes of a sphere's
+     material via a color picker.
+     -use THREE.js MeshBasicMaterial → pass Material Color     
+|     - wireframe(-use THREE.js MeshBasicMaterial → pass wireframe )    
+   -speed
+   -angle
+   -penumbra
+   -intensity                                                                                                                                            
+|                                                                     |                                                                                                     
++---------^-----------------------------------------------------------+     
+*/
 
     /*
     const gui = new dat.GUI();
@@ -394,23 +394,23 @@ export class EngineService implements OnDestroy {
     this.scene.add(this.pivot); // Add the pivot point to the scene
 
   }
-   
 
-  
+
+
   public animate(): void {
     // We have to run this outside angular zones,
     // because it could trigger heavy changeDetection cycles.
-/*
-    +-------------------------------------------------------------------------------------+                                                                                                     
-    |                                                                                     |                                                                                                     
-    | Trigger Change Detection Cycles                                                     |
-    |    - Run the rendering loop outside Angular’s change detection mechanism.           |
-    |   → Ensures the rendering starts once the document is fully loaded                  |      
-    |   → adds an event listener to execute the this.render(DOM content has fully loaded) |
-    |   → adds an event listener to execute the this.resize() the window is resized.      |                                                                                                     
-    |                                                                                     |                                                                                                     
-    +---------^---------------------------------------------------------------------------+     
-    */
+    /*
+        +-------------------------------------------------------------------------------------+                                                                                                     
+        |                                                                                     |                                                                                                     
+        | Trigger Change Detection Cycles                                                     |
+        |    - Run the rendering loop outside Angular’s change detection mechanism.           |
+        |   → Ensures the rendering starts once the document is fully loaded                  |      
+        |   → adds an event listener to execute the this.render(DOM content has fully loaded) |
+        |   → adds an event listener to execute the this.resize() the window is resized.      |                                                                                                     
+        |                                                                                     |                                                                                                     
+        +---------^---------------------------------------------------------------------------+     
+        */
     this.ngZone.runOutsideAngular(() => {
       if (document.readyState !== 'loading') {
         this.render();
@@ -426,20 +426,20 @@ export class EngineService implements OnDestroy {
     });
   }
 
-/*
-    +-------------------------------------------------------------------------------------+                                                                                                     
-    |                                                                                     |                                                                                                     
-    | Schedule Frames                                                                     |
-    |    for cube  - Schedule the next frame to be rendered using requestAnimationFrame           |
-    |                → set model rotation for y axis                                                   |
-    |                → set cube rotation for x & y axis  
-    |   for sphere  -set speed and bounce    
-    |   for model   -set rotation   
-    |   -> set pivot points                                       |
-    |   → render the scene from the perspective of the camera.                            |                                                                                                     
-    |                                                                                     |                                                                                                     
-    +---------^------------- --------------------------------------------------------------+     
-    */
+  /*
+      +-------------------------------------------------------------------------------------+                                                                                                     
+      |                                                                                     |                                                                                                     
+      | Schedule Frames                                                                     |
+      |    for cube  - Schedule the next frame to be rendered using requestAnimationFrame           |
+      |                → set model rotation for y axis                                                   |
+      |                → set cube rotation for x & y axis  
+      |   for sphere  -set speed and bounce    
+      |   for model   -set rotation   
+      |   -> set pivot points                                       |
+      |   → render the scene from the perspective of the camera.                            |                                                                                                     
+      |                                                                                     |                                                                                                     
+      +---------^------------- --------------------------------------------------------------+     
+      */
 
   public render(): void {
     this.frameId = requestAnimationFrame(() => {
@@ -453,24 +453,24 @@ export class EngineService implements OnDestroy {
     this.step += this.options.speed;
     // Apply a sine wave function to the sphere's Y position
     this.sphere.position.y = 2 + Math.abs(Math.sin(this.step) * 2);
-/*
-  
-        // Rotate the model if it is loaded
-        if (this.model) {
-         this.model.rotation.y += 0.01; // Adjust the rotation speed as needed
-        }
-       */
-        if (this.model) {
+    /*
+      
+            // Rotate the model if it is loaded
+            if (this.model) {
+             this.model.rotation.y += 0.01; // Adjust the rotation speed as needed
+            }
+           */
+    if (this.model) {
 
-          this.pivot.rotation.y += 0.01; // Rotate the pivot point
-    
-        }
-  // Update the animation mixer
-  if (this.mixer) {
-    this.mixer.update(0.01);
-  } 
+      this.pivot.rotation.y += 0.01; // Rotate the pivot point
 
-       
+    }
+    // Update the animation mixer
+    if (this.mixer) {
+      this.mixer.update(0.01);
+    }
+
+
 
     this.renderer.render(this.scene, this.camera);
   }
@@ -529,97 +529,97 @@ export class EngineService implements OnDestroy {
     |                                                                                     |                                                                                                     
     +---------^---------------------------------------------------------------------------+     
     */
-    public loadModel(): void {
-      // Load the environment texture
-      new RGBELoader()
-        .setPath('assets/')
-        .load('quarry_01_1k.hdr', texture => {
-          texture.mapping = THREE.EquirectangularReflectionMapping;
-          this.scene.background = texture;
-          this.scene.environment = texture;
+  public loadModel(): void {
+    // Load the environment texture
+    new RGBELoader()
+      .setPath('assets/')
+      .load('quarry_01_1k.hdr', texture => {
+        texture.mapping = THREE.EquirectangularReflectionMapping;
+        this.scene.background = texture;
+        this.scene.environment = texture;
+      });
+
+    // Load the existing model
+    const loader = new GLTFLoader();
+    loader.load(
+      'assets/frame.glb',
+      (gltf) => {
+
+        this.model = gltf.scene;
+        this.model.position.set(4, 4, 4);
+        this.model.scale.set(4, 4, 4);
+        this.model.updateMatrixWorld(true);
+
+        // Enable shadow casting for each mesh in the model
+        this.model.traverse((node) => {
+          if (node instanceof THREE.Mesh) {
+            node.castShadow = true;  // Enable shadow casting
+            node.receiveShadow = true;  // Enable shadow receiving if needed
+          }
         });
-    
-      // Load the existing model
-      const loader = new GLTFLoader();
-      loader.load(
-        'assets/frame.glb',
-        (gltf) => {
+        this.scene.add(this.model);
+        this.pivot.add(this.model); // Add the model to the pivot
+      },
+      (xhr) => {
+        console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
+      },
+      (error) => {
+        console.error('An error happened', error);
+      }
+    );
 
-          this.model = gltf.scene;
-          this.model.position.set(4, 4, 4);
-          this.model.scale.set(4, 4, 4);
-          this.model.updateMatrixWorld(true);
+    // Load the additional model (donkey.gltf)
 
-            // Enable shadow casting for each mesh in the model
-          this.model.traverse((node) => {
-        if (node instanceof THREE.Mesh) {
-          node.castShadow = true;  // Enable shadow casting
-          node.receiveShadow = true;  // Enable shadow receiving if needed
-        }
+
+
+    loader.load(
+      'assets/Donkey.gltf', // Adjust the path to your additional .glb file
+      (gltf) => {
+        const donkeyModel = gltf.scene;
+        // Position, scale, and add the model to the scene
+        donkeyModel.position.set(0, 0, 3.5); // Adjust position as needed
+        donkeyModel.scale.set(1, 1, 1); // Adjust scale as needed
+
+        this.mixer = new THREE.AnimationMixer(gltf.scene); // Initialize the mixer
+        const clips = gltf.animations;
+
+        //clips.forEach(function (_clips) {
+
+        //action.play(); // Play each animation clip
+        //});
+
+
+        // Enable shadow casting for each mesh in the donkey model
+        donkeyModel.traverse((node) => {
+          if (node instanceof THREE.Mesh) {
+            node.castShadow = true;  // Enable shadow casting
+            node.receiveShadow = true;  // Enable shadow receiving if needed
+          }
+        });
+
+
+        this.scene.add(donkeyModel);
+
+        const clipEat = THREE.AnimationClip.findByName(clips, 'Attack_Headbutt');
+        console.log(clipEat);
+        this.mixer.clipAction(clipEat).play();
+        //this.traverseMaterials(donkeyModel);
+
       });
-          this.scene.add(this.model);
-          this.pivot.add(this.model); // Add the model to the pivot
-        },
-        (xhr) => {
-          console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
-        },
-        (error) => {
-          console.error('An error happened', error);
-        }
-      );
-    
-      // Load the additional model (donkey.gltf)
-
-  
-
-      loader.load(
-        'assets/Donkey.gltf', // Adjust the path to your additional .glb file
-        (gltf) => {
-          const donkeyModel = gltf.scene;
-          // Position, scale, and add the model to the scene
-          donkeyModel.position.set(0, 0, 3.5); // Adjust position as needed
-          donkeyModel.scale.set(1, 1, 1); // Adjust scale as needed
-
-          this.mixer = new THREE.AnimationMixer(gltf.scene); // Initialize the mixer
-          const clips = gltf.animations;
-          
-          //clips.forEach(function (_clips) {
-
-            //action.play(); // Play each animation clip
-          //});
-
-
-             // Enable shadow casting for each mesh in the donkey model
-            donkeyModel.traverse((node) => {
-        if (node instanceof THREE.Mesh) {
-          node.castShadow = true;  // Enable shadow casting
-          node.receiveShadow = true;  // Enable shadow receiving if needed
-        }
-      });
-
-
-      this.scene.add(donkeyModel);
-        
-      const clipEat = THREE.AnimationClip.findByName( clips, 'Attack_Headbutt');
-      console.log(clipEat);
-      this.mixer.clipAction(clipEat).play();
-      //this.traverseMaterials(donkeyModel);
-
-    });
     if (this.mixer) {
       this.mixer.update(this.clock.getDelta());
     }
   }
 
- /*
-    +-------------------------------------------------------------------------------------+                                                                                                     
-    |   traverseMaterials uses                                                                                 |                                                                                                     
-    |     ->traverses through all nodes in the given object.                              |
-    |     → if a node is a mesh, it retrieves its material                                |
-    |     → set the size of the renderer to match the new window dimensions               |                                                                                                     
-    |                                                                                     |                                                                                                     
-    +---------^---------------------------------------------------------------------------+     
-    */
+  /*
+     +-------------------------------------------------------------------------------------+                                                                                                     
+     |   traverseMaterials uses                                                                                 |                                                                                                     
+     |     ->traverses through all nodes in the given object.                              |
+     |     → if a node is a mesh, it retrieves its material                                |
+     |     → set the size of the renderer to match the new window dimensions               |                                                                                                     
+     |                                                                                     |                                                                                                     
+     +---------^---------------------------------------------------------------------------+     
+     */
 
 
 
@@ -639,15 +639,15 @@ export class EngineService implements OnDestroy {
     });
   }
 
- /*
-    +-------------------------------------------------------------------------------------+                                                                                                     
-    |   setupGui                                                                          |                                                                                                     
-    |     ->creates a dat.GUI interface for the given material,
-    |     ->allowing real-time adjustments to its properties 
-    |     ->such as color and wireframe mode.                                                                                                 
-    |                                                                                     |                                                                                                     
-    +---------^---------------------------------------------------------------------------+     
-    */
+  /*
+     +-------------------------------------------------------------------------------------+                                                                                                     
+     |   setupGui                                                                          |                                                                                                     
+     |     ->creates a dat.GUI interface for the given material,
+     |     ->allowing real-time adjustments to its properties 
+     |     ->such as color and wireframe mode.                                                                                                 
+     |                                                                                     |                                                                                                     
+     +---------^---------------------------------------------------------------------------+     
+     */
 
 
   setupGui(material: THREE.Material): void {
