@@ -348,20 +348,154 @@ export class EngineService implements OnDestroy {
       return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
   }
   
+vec3 palette(float t) {
+vec3 a = vec3(0.5, 0.5, 0.5);
+vec3 b = vec3(0.5, 0.5, 0.5);
+vec3 c = vec3(0.5, 0.5, 0.5);
+vec3 d = vec3(0.263, 0.416, 0.557);
+return a + b*cos(6.28318*(c*t+d));
+}
+
   void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
-    vec2 p = fragCoord.xy / iResolution.xy;
-    ltime = iTime;
-    float ctime = iTime + fbm(p/8.)*40.;
-    float ftime = fract(ctime/6.);
-    ltime = floor(ctime/6.) + (1.-cos(ftime*3.1415)/2.);
-    ltime = ltime*6.;
-    vec2 q;
-    vec2 r;
-    float f = pattern(p, q, r);
-    vec3 col = hsv2rgb(vec3(q.x/10. + ltime/100. + .4, abs(r.y)*3. + .1, r.x + f));
-    float vig = 1. - pow(4.*(p.x - .5)*(p.x - .5), 10.);
-    vig *= 1. - pow(4.*(p.y - .5)*(p.y - .5), 10.);
-    fragColor = vec4(col*vig,1.);
+    // vec2 p = fragCoord.xy / iResolution.xy;
+    // ltime = iTime;
+    // float ctime = iTime + fbm(p/8.)*40.;
+    // float ftime = fract(ctime/6.);
+    // ltime = floor(ctime/6.) + (1.-cos(ftime*3.1415)/2.);
+    // ltime = ltime*6.;
+    // vec2 q;
+    // vec2 r;
+    // float f = pattern(p, q, r);
+    // vec3 col = hsv2rgb(vec3(q.x/10. + ltime/100. + .4, abs(r.y)*3. + .1, r.x + f));
+    // float vig = 1. - pow(4.*(p.x - .5)*(p.x - .5), 10.);
+    // vig *= 1. - pow(4.*(p.y - .5)*(p.y - .5), 10.);
+    // fragColor = vec4(col*vig,1.);
+    
+   //vec2 uv = fragCoord / iResolution.xy * 2.0 - 1.0;
+   //fragColor = vec4(uv,0.0,1.0);
+
+    //uv.x *= iResolution.x / iResolution.y;
+    //float d = length(uv);
+    //fragColor = vec4(d,d,d,1.0);
+ 
+    //vec2 uv = (fragCoord * 2.0 - iResolution.xy) / iResolution.y;
+    //float d = length(uv);
+    //d -= 0.5;
+    //fragColor = vec4(d,d,d,1.0);
+
+       //vec2 uv = (fragCoord * 2.0 - iResolution.xy) / iResolution.y;
+       // float d = length(uv);
+        //d = sin(d*8.)/8.;
+       // d = abs(d);
+       // d = smoothstep(0.0, 0.1, d);
+       // fragColor = vec4(d,d,d,1.0);
+
+        //vec2 uv = (fragCoord * 2.0 - iResolution.xy) / iResolution.y;
+       // float d = length(uv);
+        //d = sin(d*8.+ iTime)/8.;
+       // d = abs(d);
+        //d = smoothstep(0.0, 0.1, d);
+       // fragColor = vec4(d,d,d,1.0);
+
+       //vec2 uv = (fragCoord * 2.0 - iResolution.xy) / iResolution.y;
+        //float d = length(uv);
+       //d = sin(d*8.+ iTime)/8.;
+       // d = abs(d);
+       //d = 0.02 / d;
+     // fragColor = vec4(d,d,d,1.0);
+
+      // vec2 uv = (fragCoord * 2.0 - iResolution.xy) / iResolution.y;
+      // float d = length(uv);
+      // vec3 col = vec3(1.0, 0.0, 0.0);
+      // d = sin(d*8. + iTime)/8.;
+      // d = abs(d);
+      // d = 0.02 / d;
+      // col = col * d;
+      // fragColor = vec4(col, 1.0);
+
+      // vec2 uv = (fragCoord * 2.0 - iResolution.xy) / iResolution.y;
+      // float d = length(uv);
+      // vec3 col = palette(d);
+      // d = sin(d*8. + iTime)/8.;
+      // d = abs(d);
+      // d = 0.02 / d;
+      // col *= d;
+      // fragColor = vec4(col, 1.0);   
+
+
+        // vec2 uv = (fragCoord * 2.0 - iResolution.xy) / iResolution.y; 
+        // uv = fract(uv);
+        // float d = length(uv);
+        // vec3 col = palette(d + iTime);
+        // d = sin(d*8. + iTime)/8.;
+        // d = abs(d);
+        // d = 0.02 / d;
+        // col *= d;
+        // fragColor = vec4(uv, 0.0, 1.0);
+
+
+          // vec2 uv = (fragCoord * 2.0 - iResolution.xy) / iResolution.y; 
+          // vec2 uv0 = uv;
+          // vec3 finalColor = vec3(0.0);
+          // for (float i = 0.0; i< 1.0; i++) {
+          // uv *= 2.0;
+          // uv = fract(uv);
+          // uv -=0.5;
+          // //uv = fract(uv * 2.0) - 0.5; ( above 3 line in sigle line)
+          // float d = length(uv);
+          // vec3 col = palette(d + iTime);
+          // d = sin(d*8. + iTime)/8.;
+          // d = abs(d);
+          // d = 0.02 / d;
+          // finalColor += col * d;
+          // }
+          // fragColor = vec4(finalColor, 1.0);
+
+
+          // vec2 uv = (fragCoord * 2.0 - iResolution.xy) / iResolution.y; 
+          // vec2 uv0 = uv;
+          // vec3 finalColor = vec3(0.0);
+          // for (float i = 0.0; i< 3.0; i++) {
+          // uv = fract(uv * 2.0) - 0.5;
+          // float d = length(uv);
+          // vec3 col = palette(d + iTime* .4);
+          // d = sin(d*8. + iTime)/8.;
+          // d = abs(d);
+          // d = 0.02 / d;
+          // finalColor += col * d;
+          // }
+          // fragColor = vec4(finalColor, 1.0);
+
+
+            // vec2 uv = (fragCoord * 2.0 - iResolution.xy) / iResolution.y; 
+            // vec2 uv0 = uv;
+            // vec3 finalColor = vec3(0.0);
+            // for (float i = 0.0; i< 3.0; i++) {
+            // uv = fract(uv * 1.5) - 0.5;
+            // float d = length(uv) * exp(-length(uv0));
+            // vec3 col = palette(d + iTime* .4);
+            // d = sin(d*8. + iTime)/8.;
+            // d = abs(d);
+            // d = 0.02 / d;
+            // finalColor += col * d;
+            // }
+            // fragColor = vec4(finalColor, 1.0);
+
+
+            vec2 uv = (fragCoord * 2.0 - iResolution.xy) / iResolution.y; 
+            vec2 uv0 = uv;
+            vec3 finalColor = vec3(0.0);
+            for (float i = 0.0; i< 4.0; i++) {
+            uv = fract(uv * 1.5) - 0.5;
+            float d = length(uv) * exp(-length(uv0));
+            vec3 col = palette(length(uv0) + i* .4 + iTime* .4);
+            d = sin(d*8. + iTime)/8.;
+            d = abs(d);
+            d = pow(0.01 / d, 1.2);
+            finalColor += col * d;
+            }
+            fragColor = vec4(finalColor, 1.0);
+
   }
   
     varying vec2 vUv;
