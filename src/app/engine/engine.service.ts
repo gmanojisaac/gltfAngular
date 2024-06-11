@@ -27,12 +27,14 @@ export class EngineService implements OnDestroy {
   private pivot: THREE.Object3D; // Pivot point for rotation
   private controls!: OrbitControls;
   private mixer: THREE.AnimationMixer; // Declare the mixer variable
-  private sphere: THREE.Mesh;
+  //private sphere: THREE.Mesh;
   private icosahedron: THREE.Mesh;
   private icoMaterial: THREE.MeshStandardMaterial;
+  private materialshader: THREE.ShaderMaterial;
   private step = 0; // Step for sphere animation
   private clock = new THREE.Clock();
   private ico: THREE.Mesh;
+  private sphereshader: THREE.Mesh;
   private options = {
     sphereColor: '#ffea00',
     wireframe: false,
@@ -111,7 +113,7 @@ export class EngineService implements OnDestroy {
     );
     //this.camera.position.z = 5;
     //this.scene.add(this.camera);
-    this.camera.position.set(4, 0, 4);
+    this.camera.position.set(20, 0, 4);
 
 
     //  added axesHelper
@@ -297,11 +299,12 @@ export class EngineService implements OnDestroy {
 
     const sphereGeometry = new THREE.SphereGeometry(2);
     //const sphereMaterial = new THREE.MeshBasicMaterial({color: 0xFFFFFF, wireframe: false});
+
     const fragmentShader = `
     #include <common>
   
     uniform vec3 iResolution;
-    uniform float iTime;
+    uniform float uTime;
     uniform sampler2D iChannel0;
   
   float ltime;
@@ -358,8 +361,8 @@ return a + b*cos(6.28318*(c*t+d));
 
   void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
     // vec2 p = fragCoord.xy / iResolution.xy;
-    // ltime = iTime;
-    // float ctime = iTime + fbm(p/8.)*40.;
+    // ltime = uTime;
+    // float ctime = uTime + fbm(p/8.)*40.;
     // float ftime = fract(ctime/6.);
     // ltime = floor(ctime/6.) + (1.-cos(ftime*3.1415)/2.);
     // ltime = ltime*6.;
@@ -392,14 +395,14 @@ return a + b*cos(6.28318*(c*t+d));
 
         //vec2 uv = (fragCoord * 2.0 - iResolution.xy) / iResolution.y;
        // float d = length(uv);
-        //d = sin(d*8.+ iTime)/8.;
+        //d = sin(d*8.+ uTime)/8.;
        // d = abs(d);
         //d = smoothstep(0.0, 0.1, d);
        // fragColor = vec4(d,d,d,1.0);
 
        //vec2 uv = (fragCoord * 2.0 - iResolution.xy) / iResolution.y;
         //float d = length(uv);
-       //d = sin(d*8.+ iTime)/8.;
+       //d = sin(d*8.+ uTime)/8.;
        // d = abs(d);
        //d = 0.02 / d;
      // fragColor = vec4(d,d,d,1.0);
@@ -407,7 +410,7 @@ return a + b*cos(6.28318*(c*t+d));
       // vec2 uv = (fragCoord * 2.0 - iResolution.xy) / iResolution.y;
       // float d = length(uv);
       // vec3 col = vec3(1.0, 0.0, 0.0);
-      // d = sin(d*8. + iTime)/8.;
+      // d = sin(d*8. + uTime)/8.;
       // d = abs(d);
       // d = 0.02 / d;
       // col = col * d;
@@ -416,7 +419,7 @@ return a + b*cos(6.28318*(c*t+d));
       // vec2 uv = (fragCoord * 2.0 - iResolution.xy) / iResolution.y;
       // float d = length(uv);
       // vec3 col = palette(d);
-      // d = sin(d*8. + iTime)/8.;
+      // d = sin(d*8. + uTime)/8.;
       // d = abs(d);
       // d = 0.02 / d;
       // col *= d;
@@ -426,8 +429,8 @@ return a + b*cos(6.28318*(c*t+d));
         // vec2 uv = (fragCoord * 2.0 - iResolution.xy) / iResolution.y; 
         // uv = fract(uv);
         // float d = length(uv);
-        // vec3 col = palette(d + iTime);
-        // d = sin(d*8. + iTime)/8.;
+        // vec3 col = palette(d + uTime);
+        // d = sin(d*8. + uTime)/8.;
         // d = abs(d);
         // d = 0.02 / d;
         // col *= d;
@@ -443,8 +446,8 @@ return a + b*cos(6.28318*(c*t+d));
           // uv -=0.5;
           // //uv = fract(uv * 2.0) - 0.5; ( above 3 line in sigle line)
           // float d = length(uv);
-          // vec3 col = palette(d + iTime);
-          // d = sin(d*8. + iTime)/8.;
+          // vec3 col = palette(d + uTime);
+          // d = sin(d*8. + uTime)/8.;
           // d = abs(d);
           // d = 0.02 / d;
           // finalColor += col * d;
@@ -458,8 +461,8 @@ return a + b*cos(6.28318*(c*t+d));
           // for (float i = 0.0; i< 3.0; i++) {
           // uv = fract(uv * 2.0) - 0.5;
           // float d = length(uv);
-          // vec3 col = palette(d + iTime* .4);
-          // d = sin(d*8. + iTime)/8.;
+          // vec3 col = palette(d + uTime* .4);
+          // d = sin(d*8. + uTime)/8.;
           // d = abs(d);
           // d = 0.02 / d;
           // finalColor += col * d;
@@ -467,33 +470,33 @@ return a + b*cos(6.28318*(c*t+d));
           // fragColor = vec4(finalColor, 1.0);
 
 
-            // vec2 uv = (fragCoord * 2.0 - iResolution.xy) / iResolution.y; 
-            // vec2 uv0 = uv;
-            // vec3 finalColor = vec3(0.0);
-            // for (float i = 0.0; i< 3.0; i++) {
-            // uv = fract(uv * 1.5) - 0.5;
-            // float d = length(uv) * exp(-length(uv0));
-            // vec3 col = palette(d + iTime* .4);
-            // d = sin(d*8. + iTime)/8.;
-            // d = abs(d);
-            // d = 0.02 / d;
-            // finalColor += col * d;
-            // }
-            // fragColor = vec4(finalColor, 1.0);
-
-
             vec2 uv = (fragCoord * 2.0 - iResolution.xy) / iResolution.y; 
             vec2 uv0 = uv;
             vec3 finalColor = vec3(0.0);
-            for (float i = 0.0; i< 4.0; i++) {
+            for (float i = 0.0; i< 3.0; i++) {
             uv = fract(uv * 1.5) - 0.5;
             float d = length(uv) * exp(-length(uv0));
-            vec3 col = palette(length(uv0) + i* .4 + iTime* .4);
-            d = sin(d*8. + iTime)/8.;
+            vec3 col = palette(d + uTime * .4);
+            d = sin(d * 8. + uTime)/8.;
             d = abs(d);
-            d = pow(0.01 / d, 1.2);
+            d = 0.02 / d;
             finalColor += col * d;
             }
+            fragColor = vec4(finalColor, 1.0);
+
+
+            // vec2 uv = (fragCoord * 2.0 - iResolution.xy) / iResolution.y; 
+            // vec2 uv0 = uv;
+            // vec3 finalColor = vec3(0.0);
+            // for (float i = 0.0; i< 4.0; i++) {
+            // uv = fract(uv * 1.5) - 0.5;
+            // float d = length(uv) * exp(-length(uv0));
+            // vec3 col = palette(length(uv0) + i * .4 + uTime * .4);
+            // d = sin(d * 8. + uTime)/8.;
+            // d = abs(d);
+            // d = pow(0.01 / d, 1.2);
+            // finalColor += col * d;
+            // }
             fragColor = vec4(finalColor, 1.0);
 
   }
@@ -511,20 +514,32 @@ return a + b*cos(6.28318*(c*t+d));
         gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
       }
     `;
+
+
+
     const uniforms = {
-      iTime: { value: 0 },
+      uTime: { value: 0 },
       iResolution:  { value: new THREE.Vector3(1, 1, 1) },
       iChannel0: { value: texture },
     };
-    const materialshader = new THREE.ShaderMaterial({
-      vertexShader,
-      fragmentShader,
-      uniforms,
+
+    this.materialshader = new THREE.ShaderMaterial({
+
+      fragmentShader : fragmentShader,
+      vertexShader : vertexShader,
+      uniforms : uniforms
     });
+
+    this.materialshader.onBeforeCompile = (shader) => {
+        shader.uniforms['uTime'] = { value: 0 }; // Declare a uniform for time
+
+        this.materialshader.userData.shaderUniforms = shader.uniforms;
+        
+      };
     const sphereMaterial = new THREE.MeshStandardMaterial({
       color: 0xff0000, // Red color for the example
       onBeforeCompile: function (shader) {
-
+        shader.uniforms['uTime'] = { value: 0 }; // Declare a uniform for time
 
         // Example modification: Inject custom GLSL code in the vertex shader
         const customVertexCode = `
@@ -556,13 +571,15 @@ return a + b*cos(6.28318*(c*t+d));
       }
     } as any);
 
-    //const sphereMaterial = new THREE.MeshLambertMaterial({color: 0x0000FF, wireframe: false});
-    //const sphereMaterial = new THREE.MeshStandardMaterial({color: 'red'});
-    this.sphere = new THREE.Mesh(sphereGeometry, materialshader);
-    this.sphere.position.set(-4, 2, 0); // Initial position
-    this.sphere.castShadow = true;
-    this.pivot.add(this.sphere); // Add the sphere to the pivot
-    //this.scene.add(this.sphere);
+    //const sphereMaterialnew = new THREE.MeshLambertMaterial({color: 0x0000FF, wireframe: false});
+    //const sphereMaterialnew = new THREE.MeshStandardMaterial({color: 'red'});
+    const sphere = new THREE.Mesh(sphereGeometry, this.materialshader);
+    
+    sphere.position.set(-4, 2, 0); // Initial position
+    sphere.castShadow = true;
+    this.sphereshader = sphere;
+    this.pivot.add(this.sphereshader); // Add the sphere to the pivot
+    //this.scene.add(this.sphereshader);
     this.scene.add(this.pivot); // Add the pivot to the scene
 
    
@@ -602,11 +619,11 @@ return a + b*cos(6.28318*(c*t+d));
         };
     
         const ico = new THREE.Mesh(icoGeometry, this.icoMaterial);
-        ico.position.set(2, 3, 1); // Set the position of the Icosahedron
+        ico.position.set(4, 3, 1); // Set the position of the Icosahedron
        // this.scene.add(ico);
         this.ico = ico;
         this.pivot.add(this.ico); // Add the sphere to the pivot
-    //this.scene.add(this.sphere);
+    //this.scene.add(this.ico);
     this.scene.add(this.pivot);
     
         // Optionally, you can define a define for animation control
@@ -733,11 +750,17 @@ return a + b*cos(6.28318*(c*t+d));
        this.icoMaterial.userData.shaderUniforms.uTime.value += delta;
      }
  
+     if (this.materialshader.userData.shaderUniforms) {
+      this.materialshader.userData.shaderUniforms.uTime.value += delta;
+    }
      // Rotate the Icosahedron
      this.ico.rotation.x += 0.01;
      this.ico.rotation.y += 0.01;
  
+     this.sphereshader.rotation.x += 0.01;
+     this.sphereshader.rotation.y += 0.01;
 
+    //this.materialshader.rotateZ( 0.005 )
   
     
     /*
