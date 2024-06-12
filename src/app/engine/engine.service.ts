@@ -514,7 +514,42 @@ float map(vec3 p) {
         // Optionally, you can define a define for animation control
         this.icoMaterial.defines = { NO_ANIMATION: false };
     
+          
+         const textureLoader2 = new THREE.TextureLoader();
+         const displacementMap = textureLoader.load('assets/displacementmap.jpeg'); // Ensure this path is correct
+      
+          const terrainGeometry = new THREE.PlaneGeometry(100, 100, 256, 256); // Size and segments
+          const terrainMaterial = new THREE.MeshStandardMaterial({
+            color: 0x556655,
+            displacementMap: displacementMap,
+            displacementScale: 10, // Adjust as needed
+            wireframe: false, // Set to true to visualize the geometry
+          });
+      
+          const terrainMesh = new THREE.Mesh(terrainGeometry, terrainMaterial);
+          terrainMesh.rotation.x = -Math.PI / 2; // Rotate to make it horizontal
+          terrainMesh.receiveShadow = true;
+      
+          this.scene.add(terrainMesh);
         
+    
+          // Create a frame
+    const frameGeometry = new THREE.BoxGeometry(8, 4, 0.1);
+    const frameMaterial = new THREE.MeshBasicMaterial({ color: 0x8B4513 }); // Brown color
+    const frameMesh = new THREE.Mesh(frameGeometry, frameMaterial);
+    frameMesh.position.set(1, 3, 0); // Set the position 
+    this.scene.add(frameMesh);
+
+     // Load and add the image
+     const textureLoader1 = new THREE.TextureLoader();
+     textureLoader.load('assets/threedimage.jpg', (texture) => {
+       const imageGeometry = new THREE.PlaneGeometry(7.5, 3.5);
+       const imageMaterial = new THREE.MeshBasicMaterial({ map: texture });
+       const imageMesh = new THREE.Mesh(imageGeometry, imageMaterial);
+       imageMesh.position.set(1, 3, 0.06); // Slightly in front of the frame
+       this.scene.add(imageMesh);
+     });
+    
 
     
     //added gui
@@ -752,9 +787,14 @@ float map(vec3 p) {
             node.receiveShadow = true;  // Enable shadow receiving if needed
           }
         });
-        this.scene.add(this.model);
-        this.pivot.add(this.model); // Add the model to the pivot
-      },
+        //this.scene.add(this.model);
+       //this.pivot.add(this.model); // Add the model to the pivot
+
+
+           // Add a 3D image to the model
+           this.addImageToModel(this.model, 'assets/threedimage.jpg'); 
+
+          },
       (xhr) => {
         console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
       },
@@ -762,101 +802,84 @@ float map(vec3 p) {
         console.error('An error happened', error);
       }
     );
+   // Load the additional model (donkey.gltf)
+   loader.load(
+    'assets/Donkey.gltf', // Adjust the path to your additional .glb file
+    (gltf) => {
+      const donkeyModel = gltf.scene;
+      // Position, scale, and add the model to the scene
+      donkeyModel.position.set(0, 0, 3.5); // Adjust position as needed
+      donkeyModel.scale.set(1, 1, 1); // Adjust scale as needed
 
-    // Load the additional model (donkey.gltf)
+      this.mixer = new THREE.AnimationMixer(gltf.scene); // Initialize the mixer
+      const clips = gltf.animations;
 
-
-
-    loader.load(
-      'assets/Donkey.gltf', // Adjust the path to your additional .glb file
-      (gltf) => {
-        const donkeyModel = gltf.scene;
-        // Position, scale, and add the model to the scene
-        donkeyModel.position.set(0, 0, 3.5); // Adjust position as needed
-        donkeyModel.scale.set(1, 1, 1); // Adjust scale as needed
-
-        this.mixer = new THREE.AnimationMixer(gltf.scene); // Initialize the mixer
-        const clips = gltf.animations;
-
-        //clips.forEach(function (_clips) {
-
-        //action.play(); // Play each animation clip
-        //});
-
-
-        // Enable shadow casting for each mesh in the donkey model
-        donkeyModel.traverse((node) => {
-          if (node instanceof THREE.Mesh) {
-            node.castShadow = true;  // Enable shadow casting
-            node.receiveShadow = true;  // Enable shadow receiving if needed
-          }
-        });
-
-
-        this.scene.add(donkeyModel);
-
-        const clipEat = THREE.AnimationClip.findByName(clips, 'Attack_Headbutt');
-        console.log(clipEat);
-        this.mixer.clipAction(clipEat).play();
-        //this.traverseMaterials(donkeyModel);
-
-      });
-    if (this.mixer) {
-      this.mixer.update(this.clock.getDelta());
-    }
-  }
-
-  /*
-     +-------------------------------------------------------------------------------------+                                                                                                     
-     |   traverseMaterials uses                                                                                 |                                                                                                     
-     |     ->traverses through all nodes in the given object.                              |
-     |     → if a node is a mesh, it retrieves its material                                |
-     |     → set the size of the renderer to match the new window dimensions               |                                                                                                     
-     |                                                                                     |                                                                                                     
-     +---------^---------------------------------------------------------------------------+     
-     */
-
-
-
-
-  traverseMaterials(object: THREE.Object3D): void {
-    object.traverse((node) => {
-      if ((node as THREE.Mesh).isMesh) {
-        const mesh = node as THREE.Mesh;
-        const material = mesh.material as THREE.Material;
-
-        if (Array.isArray(material)) {
-          material.forEach(mat => this.setupGui(mat));
-        } else {
-          this.setupGui(material);
+      // Enable shadow casting for each mesh in the donkey model
+      donkeyModel.traverse((node) => {
+        if (node instanceof THREE.Mesh) {
+          node.castShadow = true;  // Enable shadow casting
+          node.receiveShadow = true;  // Enable shadow receiving if needed
         }
+      });
+
+      //this.scene.add(donkeyModel);
+
+      const clipEat = THREE.AnimationClip.findByName(clips, 'Attack_Headbutt');
+      if (clipEat) {
+        this.mixer.clipAction(clipEat).play();
       }
+    }
+  );
+}
+
+addImageToModel(model: THREE.Group, imagePath: string): void {
+  const textureLoader = new THREE.TextureLoader();
+  textureLoader.load(imagePath, (texture) => {
+    const imageGeometry = new THREE.PlaneGeometry(1.8, 0.8); // Adjust size as needed
+    const imageMaterial = new THREE.MeshBasicMaterial({ map: texture });
+    const imageMesh = new THREE.Mesh(imageGeometry, imageMaterial);
+   
+    // Adjust these values based on your model's dimensions and position
+    imageMesh.position.set(0.11, 0, 0.06); // Position the image correctly within the model
+    imageMesh.scale.set(1, 0.8, 1); // Adjust scale to fit inside the desired part of the model
+
+      // Rotate the image
+      imageMesh.rotation.x = 0; // Rotate around the x-axis
+      imageMesh.rotation.y = 0; // Rotate around the y-axis
+      imageMesh.rotation.z = 0; // Rotate around the z-axis
+    // Add the image mesh to the model
+    model.add(imageMesh);
+  });
+}
+
+
+traverseMaterials(object: THREE.Object3D): void {
+  object.traverse((node) => {
+    if ((node as THREE.Mesh).isMesh) {
+      const mesh = node as THREE.Mesh;
+      const material = mesh.material as THREE.Material;
+
+      if (Array.isArray(material)) {
+        material.forEach(mat => this.setupGui(mat));
+      } else {
+        this.setupGui(material);
+      }
+    }
+  });
+}
+
+setupGui(material: THREE.Material): void {
+  /*const gui = new dat.GUI();
+  const materialFolder = gui.addFolder('Material Properties');
+
+  if ((material as THREE.MeshBasicMaterial).color) {
+    materialFolder.addColor((material as THREE.MeshBasicMaterial), 'color').onChange((colorValue) => {
+      (material as THREE.MeshBasicMaterial).color.set(colorValue);
     });
   }
 
-  /*
-     +-------------------------------------------------------------------------------------+                                                                                                     
-     |   setupGui                                                                          |                                                                                                     
-     |     ->creates a dat.GUI interface for the given material,
-     |     ->allowing real-time adjustments to its properties 
-     |     ->such as color and wireframe mode.                                                                                                 
-     |                                                                                     |                                                                                                     
-     +---------^---------------------------------------------------------------------------+     
-     */
+  materialFolder.add(material, 'wireframe');
 
-
-  setupGui(material: THREE.Material): void {
-    /*const gui = new dat.GUI();
-    const materialFolder = gui.addFolder('Material Properties');
-
-    if ((material as THREE.MeshBasicMaterial).color) {
-      materialFolder.addColor((material as THREE.MeshBasicMaterial), 'color').onChange((colorValue) => {
-        (material as THREE.MeshBasicMaterial).color.set(colorValue);
-      });
-    }
-
-    materialFolder.add(material, 'wireframe');
-
-    materialFolder.open();*/
-  }
+  materialFolder.open();*/
+}
 }
