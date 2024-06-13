@@ -248,7 +248,7 @@ export class EngineService implements OnDestroy {
     this.cube.position.z = 0;
     this.cube.receiveShadow = true;
     this.cube.castShadow = true;
-    this.scene.add(this.cube);
+    //this.scene.add(this.cube);
 
 
     // Plane mesh
@@ -306,92 +306,133 @@ export class EngineService implements OnDestroy {
     uniform vec3 iResolution;
     uniform float uTime;
     uniform sampler2D iChannel0;
+
+    float ltime;
   
-  float ltime;
-  
-  float noise(vec2 p)
-  {
-    return sin(p.x*10.) * sin(p.y*(3. + sin(ltime/11.))) + .2; 
-  }
-  
-  mat2 rotate(float angle)
-  {
-    return mat2(cos(angle), -sin(angle), sin(angle), cos(angle));
-  }
-  
-  
-  float fbm(vec2 p)
-  {
-    p *= 1.1;
-    float f = 0.;
-    float amp = .5;
-    for( int i = 0; i < 3; i++) {
-      mat2 modify = rotate(ltime/50. * float(i*i));
-      f += amp*noise(p);
-      p = modify * p;
-      p *= 2.;
-      amp /= 2.2;
+    float noise(vec2 p)
+    {
+        return sin(p.x*10.) * sin(p.y*(3. + sin(ltime/11.))) + .2; 
     }
-    return f;
-  }
   
-  float pattern(vec2 p, out vec2 q, out vec2 r) {
-    q = vec2( fbm(p + vec2(1.)),
-        fbm(rotate(.1*ltime)*p + vec2(3.)));
-    r = vec2( fbm(rotate(.2)*q + vec2(0.)),
-        fbm(q + vec2(0.)));
-    return fbm(p + 1.*r);
+    mat2 rotate(float angle)
+    {
+        return mat2(cos(angle), -sin(angle), sin(angle), cos(angle));
+    }
   
-  }
+    float fbm(vec2 p)
+    {
+        p *= 1.1;
+        float f = 0.;
+        float amp = .5;
+        for (int i = 0; i < 3; i++) {
+            mat2 modify = rotate(ltime/50. * float(i*i));
+            f += amp*noise(p);
+            p = modify * p;
+            p *= 2.;
+            amp /= 2.2;
+        }
+        return f;
+    }
   
-  vec3 hsv2rgb(vec3 c)
-  {
-      vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
-      vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
-      return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
-  }
+    float pattern(vec2 p, out vec2 q, out vec2 r) {
+        q = vec2( fbm(p + vec2(1.0)),
+                  fbm(rotate(.1*ltime)*p + vec2(3.0)));
+        r = vec2( fbm(rotate(.2)*q + vec2(0.0)),
+                  fbm(q + vec2(0.0)));
+        return fbm(p + 1.0*r);
+    }
   
-vec3 palette(float t) {
-vec3 a = vec3(0.5, 0.5, 0.5);
-vec3 b = vec3(0.5, 0.5, 0.5);
-vec3 c = vec3(0.5, 0.5, 0.5);
-vec3 d = vec3(0.263, 0.416, 0.557);
-return a + b*cos(6.28318*(c*t+d));
-}
+    vec3 hsv2rgb(vec3 c)
+    {
+        vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+        vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+        return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+    }
+  
+    vec3 palette(float t) {
+        vec3 a = vec3(0.5, 0.5, 0.5);
+        vec3 b = vec3(0.5, 0.5, 0.5);
+        vec3 c = vec3(0.5, 0.5, 0.5);
+        vec3 d = vec3(0.263, 0.416, 0.557);
+        return a + b*cos(6.28318*(c*t+d));
+    }
 
-float map(vec3 p) {
-  return length(p) -3.;
-  }
+    float map(in vec3 pos) {
+        // Signed distance function for a sphere centered at origin with radius 1.5
+        float d_sphere = length(pos) - 1.5;
+        
+        // Signed distance function for a ground plane at y = -1.5
+        float d_ground = pos.y - (-1.5);
+        
+        // Return the minimum distance to any surface (union of sphere and ground plane)
+        return min(d_sphere, d_ground);
+    }
 
-  void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
+    vec3 calcNormal(in vec3 pos)
+    {
+        vec2 e = vec2(0.0001, 0.0);
+        return normalize(vec3(
+            map(pos + e.xyy) - map(pos - e.xyy),
+            map(pos + e.yxy) - map(pos - e.yxy),
+            map(pos + e.yyx) - map(pos - e.yyx)
+        ));
+    }
 
-            vec2 uv = (fragCoord * 2.0 - iResolution.xy) / iResolution.y; 
-            
-            // initialization
-            vec3 ro = vec3(0, 0, -3);// ray origin
-            vec3 rd = normalize(vec3(uv, 1)); // ray direction
-            vec3 col = vec3(0);
-            float t = 0.; // total distance travelled
+    void mainImage(out vec4 fragColor, in vec2 fragCoord)
+    {
+        // Normalize fragment coordinates to range [-1, 1]
+        vec2 p = (2.0 * fragCoord - iResolution.xy) / iResolution.y;
 
-            // raymarching
-            for (int i =0; i< 80; i++) {
-            vec3 p = ro + rd * t; // position along the ray
-            float d = map(p);
-            t +=d;
+        // Camera setup
+        float fov = 1.0; // Field of view setting
+        float an = 12.0 + 0.5 * uTime + 10.0 * iMouse.x / iResolution.x; // Compute angle based on time and mouse input
+        vec3 ro = vec3(3.0 * cos(an), 0.0, 3.0 * sin(an)); // Set camera position based on the computed angle
+        vec3 ta = vec3(0.0, 0.0, 0.0); // Define the target position (camera is looking at the origin)
+
+        // Camera orientation vectors
+        vec3 ww = normalize(ta - ro); // Calculate the forward vector from the camera to the target
+        vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0))); // Compute the right vector as the cross product of the forward vector and the up direction
+        vec3 vv = normalize(cross(uu, ww)); // Calculate the up vector as the cross product of the right and forward vectors
+
+        // Calculate the ray direction based on the camera parameters
+        vec3 rd = normalize(p.x * uu + p.y * vv + fov * ww); // Compute the ray direction by combining the orientation vectors scaled by the normalized screen coordinates and field of view
+
+        vec3 col = vec3(0.5); // Initialize color to gray
+        float t = 0.0; // Initialize the ray marching parameter
+
+        // Ray marching loop
+        for (int i = 0; i < 100; i++)
+        {
+            vec3 pos = ro + t * rd; // Calculate current position along the ray
+            float h = map(pos); // Distance to the nearest surface
+            if (h < 0.001) // If the distance is very small, we hit the surface
+            {
+                vec3 nor = calcNormal(pos); // Calculate normal at the hit point
+                vec3 sun_dir = normalize(vec3(0.8, 0.4, 0.2)); // Sun direction
+                float sun_dif = clamp(dot(nor, sun_dir), 0.0, 1.0); // Diffuse lighting from the sun
+                float sky_dif = clamp(0.5 + 0.5 * dot(nor, vec3(0.0, 1.0, 0.0)), 0.0, 1.0); // Diffuse lighting from the sky
+                col = vec3(1.0, 0.7, 0.5) * sun_dif; // Sunlight color
+                col += vec3(0.0, 0.2, 0.4) * sky_dif; // Sky color
+                break; // Exit the loop
             }
+            t += h; // Move the ray forward by the distance to the nearest surface
+            if (t > 40.0)
+            {
+                col = vec3(0.9); // If no intersection within 40 units, set background color
+                break;
+            }
+        }
 
-            //coloring
-            col = vec3(t * .2);
-            fragColor = vec4(col, 1);
+        fragColor = vec4(col, 1.0); // Output the fragment color
+    }
 
-  }
-  
     varying vec2 vUv;
   
     void main() {
-      mainImage(gl_FragColor, vUv * iResolution.xy);
+        mainImage(gl_FragColor, vUv * iResolution.xy);
     }
-    `;
+`;
+
     const vertexShader = `
       varying vec2 vUv;
       void main() {
@@ -515,40 +556,40 @@ float map(vec3 p) {
         this.icoMaterial.defines = { NO_ANIMATION: false };
     
           
-         const textureLoader2 = new THREE.TextureLoader();
-         const displacementMap = textureLoader.load('assets/displacementmap.jpeg'); // Ensure this path is correct
+        //  const textureLoader2 = new THREE.TextureLoader();
+        //  const displacementMap = textureLoader.load('assets/displacementmap.jpeg'); // Ensure this path is correct
       
-          const terrainGeometry = new THREE.PlaneGeometry(100, 100, 256, 256); // Size and segments
-          const terrainMaterial = new THREE.MeshStandardMaterial({
-            color: 0x556655,
-            displacementMap: displacementMap,
-            displacementScale: 10, // Adjust as needed
-            wireframe: false, // Set to true to visualize the geometry
-          });
+        //   const terrainGeometry = new THREE.PlaneGeometry(100, 100, 256, 256); // Size and segments
+        //   const terrainMaterial = new THREE.MeshStandardMaterial({
+        //     color: 0x556655,
+        //     displacementMap: displacementMap,
+        //     displacementScale: 10, // Adjust as needed
+        //     wireframe: false, // Set to true to visualize the geometry
+        //   });
       
-          const terrainMesh = new THREE.Mesh(terrainGeometry, terrainMaterial);
-          terrainMesh.rotation.x = -Math.PI / 2; // Rotate to make it horizontal
-          terrainMesh.receiveShadow = true;
+        //   const terrainMesh = new THREE.Mesh(terrainGeometry, terrainMaterial);
+        //   terrainMesh.rotation.x = -Math.PI / 2; // Rotate to make it horizontal
+        //   terrainMesh.receiveShadow = true;
       
-          this.scene.add(terrainMesh);
+        //   this.scene.add(terrainMesh);
         
     
           // Create a frame
-    const frameGeometry = new THREE.BoxGeometry(8, 4, 0.1);
-    const frameMaterial = new THREE.MeshBasicMaterial({ color: 0x8B4513 }); // Brown color
-    const frameMesh = new THREE.Mesh(frameGeometry, frameMaterial);
-    frameMesh.position.set(1, 3, 0); // Set the position 
-    this.scene.add(frameMesh);
+    // const frameGeometry = new THREE.BoxGeometry(8, 4, 0.1);
+    // const frameMaterial = new THREE.MeshBasicMaterial({ color: 0x8B4513 }); // Brown color
+    // const frameMesh = new THREE.Mesh(frameGeometry, frameMaterial);
+    // frameMesh.position.set(1, 3, 0); // Set the position 
+    // this.scene.add(frameMesh);
 
-     // Load and add the image
-     const textureLoader1 = new THREE.TextureLoader();
-     textureLoader.load('assets/threedimage.jpg', (texture) => {
-       const imageGeometry = new THREE.PlaneGeometry(7.5, 3.5);
-       const imageMaterial = new THREE.MeshBasicMaterial({ map: texture });
-       const imageMesh = new THREE.Mesh(imageGeometry, imageMaterial);
-       imageMesh.position.set(1, 3, 0.06); // Slightly in front of the frame
-       this.scene.add(imageMesh);
-     });
+    //  // Load and add the image
+    //  const textureLoader1 = new THREE.TextureLoader();
+    //  textureLoader.load('assets/threedimage.jpg', (texture) => {
+    //    const imageGeometry = new THREE.PlaneGeometry(7.5, 3.5);
+    //    const imageMaterial = new THREE.MeshBasicMaterial({ map: texture });
+    //    const imageMesh = new THREE.Mesh(imageGeometry, imageMaterial);
+    //    imageMesh.position.set(1, 3, 0.06); // Slightly in front of the frame
+    //    this.scene.add(imageMesh);
+    //  });
     
 
     
